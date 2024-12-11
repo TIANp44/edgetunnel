@@ -1,2417 +1,568 @@
-// <!--GAMFC-->version base on commit 43fad05dcdae3b723c53c226f8181fc5bd47223e, time is 2023-06-22 15:20:02 UTC<!--GAMFC-END-->.
-// @ts-ignore
-import { connect } from "cloudflare:sockets";
 
-// How to generate your own UUID:
-// [Windows] Press "Win + R", input cmd and run:  Powershell -NoExit -Command "[guid]::NewGuid()"
-let userID = "86c50e3a-5b87-49dd-bd20-03c7f2735e40";
+// 部署完成后在网址后面加上这个，获取自建节点和机场聚合节点，/?token=auto或/auto或
 
-const proxyIPs = ["ts.hpc.tw"]; //ts.hpc.tw edgetunnel.anycast.eu.org bestproxy.onecf.eu.org cdn-all.xn--b6gac.eu.org cdn.xn--b6gac.eu.org proxy.xxxxxxxx.tk
-const cn_hostnames = [''];
-let CDNIP = 'www.visa.com.sg'
-// http_ip
-let IP1 = 'www.visa.com'
-let IP2 = 'cis.visa.com'
-let IP3 = 'africa.visa.com'
-let IP4 = 'www.visa.com.sg'
-let IP5 = 'www.visaeurope.at'
-let IP6 = 'www.visa.com.mt'
-let IP7 = 'qa.visamiddleeast.com'
+let mytoken = 'subuuid'; //可以随便取，或者uuid生成，https://1024tools.com/uuid
+let BotToken =''; //可以为空，或者@BotFather中输入/start，/newbot，并关注机器人
+let ChatID =''; //可以为空，或者@userinfobot中获取，/start
+let TG = 0; //小白勿动， 开发者专用，1 为推送所有的访问信息，0 为不推送订阅转换后端的访问信息与异常访问
+let FileName = 'CF-Workers-SUB';
+let SUBUpdateTime = 6; //自定义订阅更新时间，单位小时
+let total = 99;//TB
+let timestamp = 4102329600000;//2099-12-31
 
-// https_ip
-let IP8 = 'usa.visa.com'
-let IP9 = 'myanmar.visa.com'
-let IP10 = 'www.visa.com.tw'
-let IP11 = 'www.visaeurope.ch'
-let IP12 = 'www.visa.com.br'
-let IP13 = 'www.visasoutheasteurope.com'
+//节点链接 + 订阅链接
+let MainData = `
+https://niubi.xn--psss74abnae03c.us.kg/6cbdafa5-8740-45c6-8967-330f67755231
+vless://bf596446-75c0-44fe-a99d-d3f85433bc7a@141.101.123.46:80?path=%2F%3Fed%3D2048&security=none&encryption=none&host=vless.tianp1692465523.workers.dev&type=ws#%E5%AE%89%E5%BE%BD%E7%94%B5%E4%BF%A1
+vless://bf596446-75c0-44fe-a99d-d3f85433bc7a@172.67.208.4:80?path=%2F%3Fed%3D2048&security=none&encryption=none&host=vless.tianp1692465523.workers.dev&type=ws#%E5%AE%89%E5%BE%BD%E7%A7%BB%E5%8A%A8
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@icook.tw:2053?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=tls&alpn=null&encryption=none&host=notls.fenggeli.buzz&fp=random&type=ws&sni=notls.fenggeli.buzz#%E5%AE%98%E6%96%B9%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@cloudflare.cfgo.cc:443?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=tls&alpn=null&encryption=none&host=notls.fenggeli.buzz&fp=random&type=ws&sni=notls.fenggeli.buzz#%E4%BC%98%E9%80%89%E5%AE%98%E6%96%B9%E7%BA%BF%E8%B7%AF
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@198.41.209.27:443?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=tls&alpn=null&encryption=none&host=notls.fenggeli.buzz&fp=random&type=ws&sni=notls.fenggeli.buzz#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A3443
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@198.41.208.44:443?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=tls&alpn=null&encryption=none&host=notls.fenggeli.buzz&fp=random&type=ws&sni=notls.fenggeli.buzz#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A3443
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@198.41.212.103:443?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=tls&alpn=null&encryption=none&host=notls.fenggeli.buzz&fp=random&type=ws&sni=notls.fenggeli.buzz#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A3443
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@162.159.10.109:443?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=tls&alpn=null&encryption=none&host=notls.fenggeli.buzz&fp=random&type=ws&sni=notls.fenggeli.buzz#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A3443
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@162.159.36.103:443?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=tls&alpn=null&encryption=none&host=notls.fenggeli.buzz&fp=random&type=ws&sni=notls.fenggeli.buzz#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A3443
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@www.visa.com.sg:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E5%AE%98%E6%96%B9%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@www.wto.org:8080?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E5%AE%98%E6%96%B9%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@www.who.int:8880?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E5%AE%98%E6%96%B9%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@ip.sb:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@japan.com:80?path=%2FproxyIP%3Dproxyip.multacom.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@malaysia.com:80?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@russia.com:80?path=%2FproxyIP%3Dproxyip.multacom.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@singapore.com:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@skk.moe:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@icook.hk:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@icook.tw:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89%E5%9F%9F%E5%90%8D
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@162.159.43.71:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A380
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@141.101.114.103:80?path=%2FproxyIP%3Dproxyip.aliyun.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A380
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@162.159.42.212:80?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A380
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@162.159.35.119:80?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A380
+vless://719a094e-44fc-42b3-ac74-4413fa17c4f5@162.159.34.157:80?path=%2FproxyIP%3Dproxyip.vultr.fxxk.dedyn.io&security=none&alpn=null&encryption=none&host=notls.fenggeli.buzz&type=ws#%E4%BC%98%E9%80%89IP%E7%AB%AF%E5%8F%A380
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@dianxinbpb.dabanliza1596.us.kg:443?encryption=none&security=tls&sni=DIanxiNBpB.DaBAnliza1596.us.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2F1oAxyd20GvWXbW0r%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%201%20-%20VLESS%20-%20Domain%20%3A%20443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@www.speedtest.net:443?encryption=none&security=tls&sni=diaNxINBpb.DaBAnliZa1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FvqSng6EYE7wU7l0Y%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%202%20-%20VLESS%20-%20Domain%20%3A%20443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.21.74.87:443?encryption=none&security=tls&sni=dIaNXInBpb.dabAnlIza1596.US.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FkqFmRisHwzUzcSSH%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%203%20-%20VLESS%20-%20IPv4%20%3A%20443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@172.67.156.106:443?encryption=none&security=tls&sni=dIaNxINBpb.DAbAnlizA1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FMW3xwdCMRmkqiYmD%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%204%20-%20VLESS%20-%20IPv4%20%3A%20443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3037::6815:4a57]:443?encryption=none&security=tls&sni=DIANxiNbpB.dabaNLIZA1596.US.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FwYhzQFcBCXiXuAZF%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%205%20-%20VLESS%20-%20IPv6%20%3A%20443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3034::ac43:9c6a]:443?encryption=none&security=tls&sni=DiAnXiNbpb.DAbaNLIza1596.uS.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FyYXQ7e6uA28FDrsf%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%206%20-%20VLESS%20-%20IPv6%20%3A%20443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.19.226.0:443?encryption=none&security=tls&sni=DiAnxinBPb.dabANliza1596.US.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FCPov8Tk4kjChJNob%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%207%20-%20VLESS%20-%20Clean%20IP%20%3A%20443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@dianxinbpb.dabanliza1596.us.kg:8443?encryption=none&security=tls&sni=diAnXInBPB.DabANLiZA1596.uS.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FfQr6SzqMyToylCVw%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%208%20-%20VLESS%20-%20Domain%20%3A%208443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@www.speedtest.net:8443?encryption=none&security=tls&sni=DIANxInBPb.dAbanLIza1596.US.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FOx55lgpd5XYjgr3e%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%209%20-%20VLESS%20-%20Domain%20%3A%208443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.21.74.87:8443?encryption=none&security=tls&sni=DiANxINBPB.DABanlIza1596.Us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FHMSTmj7XK2mbIYcS%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2010%20-%20VLESS%20-%20IPv4%20%3A%208443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@172.67.156.106:8443?encryption=none&security=tls&sni=DiaNXinbpb.DaBanLIZA1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2F1Md6ZsdXw5e9Jfu7%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2011%20-%20VLESS%20-%20IPv4%20%3A%208443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3037::6815:4a57]:8443?encryption=none&security=tls&sni=DIAnxiNbPB.daBaNlIzA1596.US.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FUEFiOWvMaIq8fY0L%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2012%20-%20VLESS%20-%20IPv6%20%3A%208443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3034::ac43:9c6a]:8443?encryption=none&security=tls&sni=DiANxinBpb.DAbaNLizA1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FTCfN3FYuTvYtdcdl%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2013%20-%20VLESS%20-%20IPv6%20%3A%208443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.19.226.0:8443?encryption=none&security=tls&sni=dIaNxInbpB.daBanLIza1596.uS.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Fkq8cR4ZT6y58iMwr%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2014%20-%20VLESS%20-%20Clean%20IP%20%3A%208443
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@dianxinbpb.dabanliza1596.us.kg:2053?encryption=none&security=tls&sni=DiANXiNBpB.dABaNLiza1596.US.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Fsnq8myEQehPCm2Xj%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2015%20-%20VLESS%20-%20Domain%20%3A%202053
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@www.speedtest.net:2053?encryption=none&security=tls&sni=DIANXinbPb.dABAnliZA1596.uS.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Fq2odvgxStC7LH7IZ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2016%20-%20VLESS%20-%20Domain%20%3A%202053
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.21.74.87:2053?encryption=none&security=tls&sni=DianXinBpb.daBAnLIzA1596.US.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FRyB2Cqh1TMHllTdl%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2017%20-%20VLESS%20-%20IPv4%20%3A%202053
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@172.67.156.106:2053?encryption=none&security=tls&sni=diANXInBPb.DabaNlIZa1596.uS.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Fv8wJoiHtNrQbKob8%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2018%20-%20VLESS%20-%20IPv4%20%3A%202053
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3037::6815:4a57]:2053?encryption=none&security=tls&sni=DiAnxInbpB.dABanLIza1596.us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FeeXrrBBcnekBdQ8Q%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2019%20-%20VLESS%20-%20IPv6%20%3A%202053
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3034::ac43:9c6a]:2053?encryption=none&security=tls&sni=DianxInbpb.daBAnlIZa1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FWJ9pRdh23dn6BpTP%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2020%20-%20VLESS%20-%20IPv6%20%3A%202053
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.19.226.0:2053?encryption=none&security=tls&sni=DIAnXInbpB.dABanLIzA1596.uS.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FdT9nVUpg8mXihv9d%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2021%20-%20VLESS%20-%20Clean%20IP%20%3A%202053
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@dianxinbpb.dabanliza1596.us.kg:2083?encryption=none&security=tls&sni=dIANXiNBpb.DabAnlIZA1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FhwLlaqYeoXNjwB5C%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2022%20-%20VLESS%20-%20Domain%20%3A%202083
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@www.speedtest.net:2083?encryption=none&security=tls&sni=DIAnxInbpb.DAbanliZa1596.US.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FvB7zlJHpKHcOFIdp%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2023%20-%20VLESS%20-%20Domain%20%3A%202083
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.21.74.87:2083?encryption=none&security=tls&sni=DIaNXINBPb.DABanlIZA1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FF74xQFsqvjXFUc8Q%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2024%20-%20VLESS%20-%20IPv4%20%3A%202083
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@172.67.156.106:2083?encryption=none&security=tls&sni=dIAnxINBPb.dABAnLiZa1596.uS.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FNXdq1Nym0Bx4D8rZ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2025%20-%20VLESS%20-%20IPv4%20%3A%202083
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3037::6815:4a57]:2083?encryption=none&security=tls&sni=DiaNxINbPB.dABanliZa1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FRce1pMgFZYwMO394%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2026%20-%20VLESS%20-%20IPv6%20%3A%202083
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3034::ac43:9c6a]:2083?encryption=none&security=tls&sni=dIANXinbPb.DaBaNlizA1596.US.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FznxeJl36rG49Ze9u%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2027%20-%20VLESS%20-%20IPv6%20%3A%202083
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.19.226.0:2083?encryption=none&security=tls&sni=DiAnxInBpB.DabANliZa1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Fp9ZTnOP8iWlSlCbZ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2028%20-%20VLESS%20-%20Clean%20IP%20%3A%202083
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@dianxinbpb.dabanliza1596.us.kg:2087?encryption=none&security=tls&sni=DIanxInbpB.daBANLiZa1596.US.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FQhTsyW1I0EVZM2L9%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2029%20-%20VLESS%20-%20Domain%20%3A%202087
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@www.speedtest.net:2087?encryption=none&security=tls&sni=diAnXInBPB.daBAnLiZa1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FP6dVnkz0wPqlq1WS%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2030%20-%20VLESS%20-%20Domain%20%3A%202087
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.21.74.87:2087?encryption=none&security=tls&sni=DIAnXinbPB.DaBanLIza1596.uS.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FZymFDQbMJkHToDjl%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2031%20-%20VLESS%20-%20IPv4%20%3A%202087
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@172.67.156.106:2087?encryption=none&security=tls&sni=DianxinBpB.dAbANLizA1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FbKZzABQzITXxFMxh%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2032%20-%20VLESS%20-%20IPv4%20%3A%202087
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3037::6815:4a57]:2087?encryption=none&security=tls&sni=DiAnXinbpB.DabanLiZa1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FKXWskK0DZkiDlWmu%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2033%20-%20VLESS%20-%20IPv6%20%3A%202087
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3034::ac43:9c6a]:2087?encryption=none&security=tls&sni=dIANXINBPb.DaBanLIZA1596.US.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FsI5ZGzrAPkWxapcb%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2034%20-%20VLESS%20-%20IPv6%20%3A%202087
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.19.226.0:2087?encryption=none&security=tls&sni=DianXiNBpB.DAbaNlIzA1596.uS.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FDYh80BooCxPVxiB8%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2035%20-%20VLESS%20-%20Clean%20IP%20%3A%202087
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@dianxinbpb.dabanliza1596.us.kg:2096?encryption=none&security=tls&sni=DIANXINBPb.DAbANLiza1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FDAMzqmoRwSEuGoqQ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2036%20-%20VLESS%20-%20Domain%20%3A%202096
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@www.speedtest.net:2096?encryption=none&security=tls&sni=dIANxInbPb.daBaNLIza1596.us.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2F6bUEfiEtdEbttzXV%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2037%20-%20VLESS%20-%20Domain%20%3A%202096
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.21.74.87:2096?encryption=none&security=tls&sni=diaNXinbPB.DAbANLiza1596.Us.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FMKLKJL1EutKOLhR1%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2038%20-%20VLESS%20-%20IPv4%20%3A%202096
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@172.67.156.106:2096?encryption=none&security=tls&sni=DiaNXINbpB.daBAnlIZA1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FHkvvcwp9umpLOVKO%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2039%20-%20VLESS%20-%20IPv4%20%3A%202096
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3037::6815:4a57]:2096?encryption=none&security=tls&sni=diAnxINbpB.dabaNlIZa1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FFPtaXGUBdfeebI2v%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2040%20-%20VLESS%20-%20IPv6%20%3A%202096
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@[2606:4700:3034::ac43:9c6a]:2096?encryption=none&security=tls&sni=diAnXINbpb.DabANLIza1596.uS.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FAiJuMufZ7gjYM3Ud%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2041%20-%20VLESS%20-%20IPv6%20%3A%202096
+vless://2a79437e-ad6b-41f2-af2a-33d1052c5a5a@104.19.226.0:2096?encryption=none&security=tls&sni=DIAnXInBPB.DaBanlIZA1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Fcyq2iKQ31IuIKiNW%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2042%20-%20VLESS%20-%20Clean%20IP%20%3A%202096
+trojan://bpb-trojan@dianxinbpb.dabanliza1596.us.kg:443?security=tls&sni=DIanxiNBpB.DaBAnliza1596.us.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftr1oAxyd20GvWXbW0r%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%201%20-%20Trojan%20-%20Domain%20%3A%20443
+trojan://bpb-trojan@www.speedtest.net:443?security=tls&sni=diaNxINBpb.DaBAnliZa1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrvqSng6EYE7wU7l0Y%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%202%20-%20Trojan%20-%20Domain%20%3A%20443
+trojan://bpb-trojan@104.21.74.87:443?security=tls&sni=dIaNXInBpb.dabAnlIza1596.US.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrkqFmRisHwzUzcSSH%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%203%20-%20Trojan%20-%20IPv4%20%3A%20443
+trojan://bpb-trojan@172.67.156.106:443?security=tls&sni=dIaNxINBpb.DAbAnlizA1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrMW3xwdCMRmkqiYmD%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%204%20-%20Trojan%20-%20IPv4%20%3A%20443
+trojan://bpb-trojan@[2606:4700:3037::6815:4a57]:443?security=tls&sni=DIANxiNbpB.dabaNLIZA1596.US.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrwYhzQFcBCXiXuAZF%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%205%20-%20Trojan%20-%20IPv6%20%3A%20443
+trojan://bpb-trojan@[2606:4700:3034::ac43:9c6a]:443?security=tls&sni=DiAnXiNbpb.DAbaNLIza1596.uS.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtryYXQ7e6uA28FDrsf%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%206%20-%20Trojan%20-%20IPv6%20%3A%20443
+trojan://bpb-trojan@104.19.226.0:443?security=tls&sni=DiAnxinBPb.dabANliza1596.US.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrCPov8Tk4kjChJNob%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%207%20-%20Trojan%20-%20Clean%20IP%20%3A%20443
+trojan://bpb-trojan@dianxinbpb.dabanliza1596.us.kg:8443?security=tls&sni=diAnXInBPB.DabANLiZA1596.uS.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrfQr6SzqMyToylCVw%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%208%20-%20Trojan%20-%20Domain%20%3A%208443
+trojan://bpb-trojan@www.speedtest.net:8443?security=tls&sni=DIANxInBPb.dAbanLIza1596.US.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrOx55lgpd5XYjgr3e%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%209%20-%20Trojan%20-%20Domain%20%3A%208443
+trojan://bpb-trojan@104.21.74.87:8443?security=tls&sni=DiANxINBPB.DABanlIza1596.Us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrHMSTmj7XK2mbIYcS%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2010%20-%20Trojan%20-%20IPv4%20%3A%208443
+trojan://bpb-trojan@172.67.156.106:8443?security=tls&sni=DiaNXinbpb.DaBanLIZA1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftr1Md6ZsdXw5e9Jfu7%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2011%20-%20Trojan%20-%20IPv4%20%3A%208443
+trojan://bpb-trojan@[2606:4700:3037::6815:4a57]:8443?security=tls&sni=DIAnxiNbPB.daBaNlIzA1596.US.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrUEFiOWvMaIq8fY0L%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2012%20-%20Trojan%20-%20IPv6%20%3A%208443
+trojan://bpb-trojan@[2606:4700:3034::ac43:9c6a]:8443?security=tls&sni=DiANxinBpb.DAbaNLizA1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrTCfN3FYuTvYtdcdl%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2013%20-%20Trojan%20-%20IPv6%20%3A%208443
+trojan://bpb-trojan@104.19.226.0:8443?security=tls&sni=dIaNxInbpB.daBanLIza1596.uS.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftrkq8cR4ZT6y58iMwr%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2014%20-%20Trojan%20-%20Clean%20IP%20%3A%208443
+trojan://bpb-trojan@dianxinbpb.dabanliza1596.us.kg:2053?security=tls&sni=DiANXiNBpB.dABaNLiza1596.US.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftrsnq8myEQehPCm2Xj%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2015%20-%20Trojan%20-%20Domain%20%3A%202053
+trojan://bpb-trojan@www.speedtest.net:2053?security=tls&sni=DIANXinbPb.dABAnliZA1596.uS.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftrq2odvgxStC7LH7IZ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2016%20-%20Trojan%20-%20Domain%20%3A%202053
+trojan://bpb-trojan@104.21.74.87:2053?security=tls&sni=DianXinBpb.daBAnLIzA1596.US.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrRyB2Cqh1TMHllTdl%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2017%20-%20Trojan%20-%20IPv4%20%3A%202053
+trojan://bpb-trojan@172.67.156.106:2053?security=tls&sni=diANXInBPb.DabaNlIZa1596.uS.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftrv8wJoiHtNrQbKob8%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2018%20-%20Trojan%20-%20IPv4%20%3A%202053
+trojan://bpb-trojan@[2606:4700:3037::6815:4a57]:2053?security=tls&sni=DiAnxInbpB.dABanLIza1596.us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtreeXrrBBcnekBdQ8Q%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2019%20-%20Trojan%20-%20IPv6%20%3A%202053
+trojan://bpb-trojan@[2606:4700:3034::ac43:9c6a]:2053?security=tls&sni=DianxInbpb.daBAnlIZa1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrWJ9pRdh23dn6BpTP%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2020%20-%20Trojan%20-%20IPv6%20%3A%202053
+trojan://bpb-trojan@104.19.226.0:2053?security=tls&sni=DIAnXInbpB.dABanLIzA1596.uS.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrdT9nVUpg8mXihv9d%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2021%20-%20Trojan%20-%20Clean%20IP%20%3A%202053
+trojan://bpb-trojan@dianxinbpb.dabanliza1596.us.kg:2083?security=tls&sni=dIANXiNBpb.DabAnlIZA1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrhwLlaqYeoXNjwB5C%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2022%20-%20Trojan%20-%20Domain%20%3A%202083
+trojan://bpb-trojan@www.speedtest.net:2083?security=tls&sni=DIAnxInbpb.DAbanliZa1596.US.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrvB7zlJHpKHcOFIdp%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2023%20-%20Trojan%20-%20Domain%20%3A%202083
+trojan://bpb-trojan@104.21.74.87:2083?security=tls&sni=DIaNXINBPb.DABanlIZA1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrF74xQFsqvjXFUc8Q%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2024%20-%20Trojan%20-%20IPv4%20%3A%202083
+trojan://bpb-trojan@172.67.156.106:2083?security=tls&sni=dIAnxINBPb.dABAnLiZa1596.uS.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrNXdq1Nym0Bx4D8rZ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2025%20-%20Trojan%20-%20IPv4%20%3A%202083
+trojan://bpb-trojan@[2606:4700:3037::6815:4a57]:2083?security=tls&sni=DiaNxINbPB.dABanliZa1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrRce1pMgFZYwMO394%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2026%20-%20Trojan%20-%20IPv6%20%3A%202083
+trojan://bpb-trojan@[2606:4700:3034::ac43:9c6a]:2083?security=tls&sni=dIANXinbPb.DaBaNlizA1596.US.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrznxeJl36rG49Ze9u%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2027%20-%20Trojan%20-%20IPv6%20%3A%202083
+trojan://bpb-trojan@104.19.226.0:2083?security=tls&sni=DiAnxInBpB.DabANliZa1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftrp9ZTnOP8iWlSlCbZ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2028%20-%20Trojan%20-%20Clean%20IP%20%3A%202083
+trojan://bpb-trojan@dianxinbpb.dabanliza1596.us.kg:2087?security=tls&sni=DIanxInbpB.daBANLiZa1596.US.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrQhTsyW1I0EVZM2L9%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2029%20-%20Trojan%20-%20Domain%20%3A%202087
+trojan://bpb-trojan@www.speedtest.net:2087?security=tls&sni=diAnXInBPB.daBAnLiZa1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrP6dVnkz0wPqlq1WS%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2030%20-%20Trojan%20-%20Domain%20%3A%202087
+trojan://bpb-trojan@104.21.74.87:2087?security=tls&sni=DIAnXinbPB.DaBanLIza1596.uS.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrZymFDQbMJkHToDjl%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2031%20-%20Trojan%20-%20IPv4%20%3A%202087
+trojan://bpb-trojan@172.67.156.106:2087?security=tls&sni=DianxinBpB.dAbANLizA1596.Us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrbKZzABQzITXxFMxh%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2032%20-%20Trojan%20-%20IPv4%20%3A%202087
+trojan://bpb-trojan@[2606:4700:3037::6815:4a57]:2087?security=tls&sni=DiAnXinbpB.DabanLiZa1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrKXWskK0DZkiDlWmu%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2033%20-%20Trojan%20-%20IPv6%20%3A%202087
+trojan://bpb-trojan@[2606:4700:3034::ac43:9c6a]:2087?security=tls&sni=dIANXINBPb.DaBanLIZA1596.US.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrsI5ZGzrAPkWxapcb%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2034%20-%20Trojan%20-%20IPv6%20%3A%202087
+trojan://bpb-trojan@104.19.226.0:2087?security=tls&sni=DianXiNBpB.DAbaNlIzA1596.uS.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrDYh80BooCxPVxiB8%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2035%20-%20Trojan%20-%20Clean%20IP%20%3A%202087
+trojan://bpb-trojan@dianxinbpb.dabanliza1596.us.kg:2096?security=tls&sni=DIANXINBPb.DAbANLiza1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrDAMzqmoRwSEuGoqQ%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2036%20-%20Trojan%20-%20Domain%20%3A%202096
+trojan://bpb-trojan@www.speedtest.net:2096?security=tls&sni=dIANxInbPb.daBaNLIza1596.us.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftr6bUEfiEtdEbttzXV%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2037%20-%20Trojan%20-%20Domain%20%3A%202096
+trojan://bpb-trojan@104.21.74.87:2096?security=tls&sni=diaNXinbPB.DAbANLiza1596.Us.kG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrMKLKJL1EutKOLhR1%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2038%20-%20Trojan%20-%20IPv4%20%3A%202096
+trojan://bpb-trojan@172.67.156.106:2096?security=tls&sni=DiaNXINbpB.daBAnlIZA1596.us.Kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrHkvvcwp9umpLOVKO%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2039%20-%20Trojan%20-%20IPv4%20%3A%202096
+trojan://bpb-trojan@[2606:4700:3037::6815:4a57]:2096?security=tls&sni=diAnxINbpB.dabaNlIZa1596.us.KG&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrFPtaXGUBdfeebI2v%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2040%20-%20Trojan%20-%20IPv6%20%3A%202096
+trojan://bpb-trojan@[2606:4700:3034::ac43:9c6a]:2096?security=tls&sni=diAnXINbpb.DabANLIza1596.uS.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2FtrAiJuMufZ7gjYM3Ud%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2041%20-%20Trojan%20-%20IPv6%20%3A%202096
+trojan://bpb-trojan@104.19.226.0:2096?security=tls&sni=DIAnXInBPB.DaBanlIZA1596.Us.kg&alpn=h2%2Chttp%2F1.1&fp=randomized&type=ws&host=dianxinbpb.dabanliza1596.us.kg&path=%2Ftrcyq2iKQ31IuIKiNW%2FOC4yMTguNS4zOA%3D%3D%3Fed%3D2560#%F0%9F%92%A6%2042%20-%20Trojan%20-%20Clean%20IP%20%3A%202096
+`
 
-// http_port
-let PT1 = '80'
-let PT2 = '8080'
-let PT3 = '8880'
-let PT4 = '2052'
-let PT5 = '2082'
-let PT6 = '2086'
-let PT7 = '2095'
-
-// https_port
-let PT8 = '443'
-let PT9 = '8443'
-let PT10 = '2053'
-let PT11 = '2083'
-let PT12 = '2087'
-let PT13 = '2096'
-
-let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
-let proxyPort = proxyIP.includes(':') ? proxyIP.split(':')[1] : '443';
-
-if (!isValidUUID(userID)) {
-  throw new Error("uuid is not valid");
-}
+let urls = [];
+let subconverter = "SUBAPI.fxxk.dedyn.io"; //在线订阅转换后端，目前使用CM的订阅转换功能。支持自建psub 可自行搭建https://github.com/bulianglin/psub
+let subconfig = "https://raw.githubusercontent.com/TIANp44/Qifei/refs/heads/main/diy.ini"; //订阅配置文件
+let subProtocol = 'https';
 
 export default {
-  /**
-   * @param {import("@cloudflare/workers-types").Request} request
-   * @param {uuid: string, proxyip: string, cdnip: string, ip1: string, ip2: string, ip3: string, ip4: string, ip5: string, ip6: string, ip7: string, ip8: string, ip9: string, ip10: string, ip11: string, ip12: string, ip13: string, pt1: string, pt2: string, pt3: string, pt4: string, pt5: string, pt6: string, pt7: string, pt8: string, pt9: string, pt10: string, pt11: string, pt12: string, pt13: string} env
-   * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
-   * @returns {Promise<Response>}
-   */
-  async fetch(request, env, ctx) {
-    try {
-      const { proxyip } = env;
-      userID = env.uuid || userID;
-			if (proxyip) {
-				if (proxyip.includes(']:')) {
-					let lastColonIndex = proxyip.lastIndexOf(':');
-					proxyPort = proxyip.slice(lastColonIndex + 1);
-					proxyIP = proxyip.slice(0, lastColonIndex);
-					
-				} else if (!proxyip.includes(']:') && !proxyip.includes(']')) {
-					[proxyIP, proxyPort = '443'] = proxyip.split(':');
-				} else {
-					proxyPort = '443';
-					proxyIP = proxyip;
-				}				
+	async fetch (request,env) {
+		const userAgentHeader = request.headers.get('User-Agent');
+		const userAgent = userAgentHeader ? userAgentHeader.toLowerCase() : "null";
+		const url = new URL(request.url);
+		const token = url.searchParams.get('token');
+		mytoken = env.TOKEN || mytoken;
+		BotToken = env.TGTOKEN || BotToken;
+		ChatID = env.TGID || ChatID; 
+		TG = env.TG || TG; 
+		subconverter = env.SUBAPI || subconverter;
+		if( subconverter.includes("http://") ){
+			subconverter = subconverter.split("//")[1];
+			subProtocol = 'http';
+		} else {
+			subconverter = subconverter.split("//")[1] || subconverter;
+		}
+		subconfig = env.SUBCONFIG || subconfig;
+		FileName = env.SUBNAME || FileName;
+		MainData = env.LINK || MainData;
+		if(env.LINKSUB) urls = await ADD(env.LINKSUB);
+
+		const currentDate = new Date();
+		currentDate.setHours(0, 0, 0, 0); 
+		const timeTemp = Math.ceil(currentDate.getTime() / 1000);
+		const fakeToken = await MD5MD5(`${mytoken}${timeTemp}`);
+		//console.log(`${fakeUserID}\n${fakeHostName}`); // 打印fakeID
+
+		let UD = Math.floor(((timestamp - Date.now())/timestamp * total * 1099511627776 )/2);
+		total = total * 1099511627776 ;
+		let expire= Math.floor(timestamp / 1000) ;
+		SUBUpdateTime = env.SUBUPTIME || SUBUpdateTime;
+
+		let 重新汇总所有链接 = await ADD(MainData + '\n' + urls.join('\n'));
+		let 自建节点 ="";
+		let 订阅链接 ="";
+		for (let x of 重新汇总所有链接) {
+			if (x.toLowerCase().startsWith('http')) {
+				订阅链接 += x + '\n';
 			} else {
-				if (proxyIP.includes(']:')) {
-					let lastColonIndex = proxyIP.lastIndexOf(':');
-					proxyPort = proxyIP.slice(lastColonIndex + 1);
-					proxyIP = proxyIP.slice(0, lastColonIndex);	
-				} else if (!proxyIP.includes(']:') && !proxyIP.includes(']')) {
-					[proxyIP, proxyPort = '443'] = proxyIP.split(':');
-				} else {
-					proxyPort = '443';
-				}	
+				自建节点 += x + '\n';
 			}
-			console.log('ProxyIP:', proxyIP);
-			console.log('ProxyPort:', proxyPort);
-      CDNIP = env.cdnip || CDNIP;
-	  IP1 = env.ip1 || IP1;
-	  IP2 = env.ip2 || IP2;
-	  IP3 = env.ip3 || IP3;
-	  IP4 = env.ip4 || IP4;
-	  IP5 = env.ip5 || IP5;
-	  IP6 = env.ip6 || IP6;
-	  IP7 = env.ip7 || IP7;
-	  IP8 = env.ip8 || IP8;
-	  IP9 = env.ip9 || IP9;
-	  IP10 = env.ip10 || IP10;
-	  IP11 = env.ip11 || IP11;
-	  IP12 = env.ip12 || IP12;
-	  IP13 = env.ip13 || IP13;
-	  PT1 = env.pt1 || PT1;
-	  PT2 = env.pt2 || PT2;
-	  PT3 = env.pt3 || PT3;
-	  PT4 = env.pt4 || PT4;
-	  PT5 = env.pt5 || PT5;
-	  PT6 = env.pt6 || PT6;
-	  PT7 = env.pt7 || PT7;
-	  PT8 = env.pt8 || PT8;
-	  PT9 = env.pt9 || PT9;
-	  PT10 = env.pt10 || PT10;
-	  PT11 = env.pt11 || PT11;
-	  PT12 = env.pt12 || PT12;
-	  PT13 = env.pt13 || PT13;
-      const upgradeHeader = request.headers.get("Upgrade");
-      const url = new URL(request.url);
-      if (!upgradeHeader || upgradeHeader !== "websocket") {
-        const url = new URL(request.url);
-        switch (url.pathname) {
-          case `/${userID}`: {
-            const vlessConfig = getVLESSConfig(userID, request.headers.get("Host"));
-            return new Response(`${vlessConfig}`, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/html;charset=utf-8",
-              },
-            });
-          }
-		  case `/${userID}/ty`: {
-			const tyConfig = gettyConfig(userID, request.headers.get('Host'));
-			return new Response(`${tyConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
-			});
 		}
-		case `/${userID}/cl`: {
-			const clConfig = getclConfig(userID, request.headers.get('Host'));
-			return new Response(`${clConfig}`, {
-				status: 200,
+		MainData = 自建节点;
+		urls = await ADD(订阅链接);
+
+		if ( !(token == mytoken || token == fakeToken || url.pathname == ("/"+ mytoken) || url.pathname.includes("/"+ mytoken + "?")) ) {
+			if ( TG == 1 && url.pathname !== "/" && url.pathname !== "/favicon.ico" ) await sendMessage(`#异常访问 ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${userAgent}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
+			if (env.URL302) return Response.redirect(env.URL302, 302);
+			else if (env.URL) return await proxyURL(env.URL, url);
+			else return new Response(await nginx(), { 
+				status: 200 ,
 				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
+					'Content-Type': 'text/html; charset=UTF-8',
+				},
 			});
-		}
-		case `/${userID}/sb`: {
-			const sbConfig = getsbConfig(userID, request.headers.get('Host'));
-			return new Response(`${sbConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/pty`: {
-			const ptyConfig = getptyConfig(userID, request.headers.get('Host'));
-			return new Response(`${ptyConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/pcl`: {
-			const pclConfig = getpclConfig(userID, request.headers.get('Host'));
-			return new Response(`${pclConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/psb`: {
-			const psbConfig = getpsbConfig(userID, request.headers.get('Host'));
-			return new Response(`${psbConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json;charset=utf-8",
-				}
-			});
-		}
-          default:
-            // return new Response('Not found', { status: 404 });
-            // For any other path, reverse proxy to 'ramdom website' and return the original response, caching it in the process
-            if (cn_hostnames.includes('')) {
-            return new Response(JSON.stringify(request.cf, null, 4), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8",
-              },
-            });
-            }
-            const randomHostname = cn_hostnames[Math.floor(Math.random() * cn_hostnames.length)];
-            const newHeaders = new Headers(request.headers);
-            newHeaders.set("cf-connecting-ip", "1.2.3.4");
-            newHeaders.set("x-forwarded-for", "1.2.3.4");
-            newHeaders.set("x-real-ip", "1.2.3.4");
-            newHeaders.set("referer", "https://www.google.com/search?q=edtunnel");
-            // Use fetch to proxy the request to 15 different domains
-            const proxyUrl = "https://" + randomHostname + url.pathname + url.search;
-            let modifiedRequest = new Request(proxyUrl, {
-              method: request.method,
-              headers: newHeaders,
-              body: request.body,
-              redirect: "manual",
-            });
-            const proxyResponse = await fetch(modifiedRequest, { redirect: "manual" });
-            // Check for 302 or 301 redirect status and return an error response
-            if ([301, 302].includes(proxyResponse.status)) {
-              return new Response(`Redirects to ${randomHostname} are not allowed.`, {
-                status: 403,
-                statusText: "Forbidden",
-              });
-            }
-            // Return the response from the proxy server
-            return proxyResponse;
-        }
-      } else {
-			if(url.pathname.includes('/pyip='))
-			{
-				const tmp_ip=url.pathname.split("=")[1];
-				if(isValidIP(tmp_ip))
-				{
-					proxyIP=tmp_ip;
-					if (proxyIP.includes(']:')) {
-						let lastColonIndex = proxyIP.lastIndexOf(':');
-						proxyPort = proxyIP.slice(lastColonIndex + 1);
-						proxyIP = proxyIP.slice(0, lastColonIndex);	
-					} else if (!proxyIP.includes(']:') && !proxyIP.includes(']')) {
-						[proxyIP, proxyPort = '443'] = proxyIP.split(':');
-					} else {
-						proxyPort = '443';
+		} else {
+			await sendMessage(`#获取订阅 ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${userAgentHeader}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
+			let 订阅格式 = 'base64';
+			if (userAgent.includes('null') || userAgent.includes('subconverter') || userAgent.includes('nekobox') || userAgent.includes(('CF-Workers-SUB').toLowerCase())){
+				订阅格式 = 'base64';
+			} else if (userAgent.includes('clash') || ( url.searchParams.has('clash') && !userAgent.includes('subconverter'))){
+				订阅格式 = 'clash';
+			} else if (userAgent.includes('sing-box') || userAgent.includes('singbox') || ( (url.searchParams.has('sb') || url.searchParams.has('singbox')) && !userAgent.includes('subconverter'))){
+				订阅格式 = 'singbox';
+			} else if (userAgent.includes('surge') || ( url.searchParams.has('surge') && !userAgent.includes('subconverter'))){
+				订阅格式 = 'surge';
+			} else if (userAgent.includes('quantumult%20x') || (url.searchParams.has('quanx') && !userAgent.includes('subconverter'))){
+				订阅格式 = 'quanx';
+			} else if (userAgent.includes('loon') || (url.searchParams.has('loon') && !userAgent.includes('subconverter'))){
+				订阅格式 = 'loon';
+			}
+
+			let subconverterUrl ;
+			let 订阅转换URL = `${url.origin}/${await MD5MD5(fakeToken)}?token=${fakeToken}`;
+			//console.log(订阅转换URL);
+			let req_data = MainData;
+
+			let 追加UA = 'v2rayn';
+			if (url.searchParams.has('clash')) 追加UA = 'clash';
+			else if(url.searchParams.has('singbox')) 追加UA = 'singbox';
+			else if(url.searchParams.has('surge')) 追加UA = 'surge';
+			else if(url.searchParams.has('quanx')) 追加UA = 'Quantumult%20X';
+			else if(url.searchParams.has('loon')) 追加UA = 'Loon';
+			
+			const 请求订阅响应内容 = await getSUB(urls ,request ,追加UA, userAgentHeader);
+			console.log(请求订阅响应内容);
+			req_data += 请求订阅响应内容[0].join('\n');
+			订阅转换URL += "|" + 请求订阅响应内容[1];
+
+			if(env.WARP) 订阅转换URL += "|" + (await ADD(env.WARP)).join("|");
+			//修复中文错误
+			const utf8Encoder = new TextEncoder();
+			const encodedData = utf8Encoder.encode(req_data);
+			//const text = String.fromCharCode.apply(null, encodedData);
+			const utf8Decoder = new TextDecoder();
+			const text = utf8Decoder.decode(encodedData);
+
+			//去重
+			const uniqueLines = new Set(text.split('\n'));
+			const result = [...uniqueLines].join('\n');
+			//console.log(result);
+			
+			let base64Data;
+			try {
+				base64Data = btoa(result);
+			} catch (e) {
+				function encodeBase64(data) {
+					const binary = new TextEncoder().encode(data);
+					let base64 = '';
+					const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+				
+					for (let i = 0; i < binary.length; i += 3) {
+						const byte1 = binary[i];
+						const byte2 = binary[i + 1] || 0;
+						const byte3 = binary[i + 2] || 0;
+				
+						base64 += chars[byte1 >> 2];
+						base64 += chars[((byte1 & 3) << 4) | (byte2 >> 4)];
+						base64 += chars[((byte2 & 15) << 2) | (byte3 >> 6)];
+						base64 += chars[byte3 & 63];
 					}
-				}	
+				
+					const padding = 3 - (binary.length % 3 || 3);
+					return base64.slice(0, base64.length - padding) + '=='.slice(0, padding);
+				}
+				
+				base64Data = encodeBase64(result);
 			}
-        return await vlessOverWSHandler(request);
+
+			if (订阅格式 == 'base64' || token == fakeToken){
+				return new Response(base64Data ,{
+					headers: { 
+						"content-type": "text/plain; charset=utf-8",
+						"Profile-Update-Interval": `${SUBUpdateTime}`,
+						"Subscription-Userinfo": `upload=${UD}; download=${UD}; total=${total}; expire=${expire}`,
+					}
+				});
+			} else if (订阅格式 == 'clash'){
+				subconverterUrl = `${subProtocol}://${subconverter}/sub?target=clash&url=${encodeURIComponent(订阅转换URL)}&insert=false&config=${encodeURIComponent(subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
+			} else if (订阅格式 == 'singbox'){
+				subconverterUrl = `${subProtocol}://${subconverter}/sub?target=singbox&url=${encodeURIComponent(订阅转换URL)}&insert=false&config=${encodeURIComponent(subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
+			} else if (订阅格式 == 'surge'){
+				subconverterUrl = `${subProtocol}://${subconverter}/sub?target=surge&url=${encodeURIComponent(订阅转换URL)}&insert=false&config=${encodeURIComponent(subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
+			} else if (订阅格式 == 'quanx'){
+				subconverterUrl = `${subProtocol}://${subconverter}/sub?target=quanx&url=${encodeURIComponent(订阅转换URL)}&insert=false&config=${encodeURIComponent(subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&udp=true`;
+			} else if (订阅格式 == 'loon'){
+				subconverterUrl = `${subProtocol}://${subconverter}/sub?target=loon&url=${encodeURIComponent(订阅转换URL)}&insert=false&config=${encodeURIComponent(subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false`;
+			}
+			//console.log(订阅转换URL);
+			try {
+				const subconverterResponse = await fetch(subconverterUrl);
+				
+				if (!subconverterResponse.ok) {
+					return new Response(base64Data ,{
+						headers: { 
+							"content-type": "text/plain; charset=utf-8",
+							"Profile-Update-Interval": `${SUBUpdateTime}`,
+							"Subscription-Userinfo": `upload=${UD}; download=${UD}; total=${total}; expire=${expire}`,
+						}
+					});
+					//throw new Error(`Error fetching subconverterUrl: ${subconverterResponse.status} ${subconverterResponse.statusText}`);
+				}
+				let subconverterContent = await subconverterResponse.text();
+				if (订阅格式 == 'clash') subconverterContent =await clashFix(subconverterContent);
+				return new Response(subconverterContent, {
+					headers: { 
+						"Content-Disposition": `attachment; filename*=utf-8''${encodeURIComponent(FileName)}; filename=${FileName}`,
+						"content-type": "text/plain; charset=utf-8",
+						"Profile-Update-Interval": `${SUBUpdateTime}`,
+						"Subscription-Userinfo": `upload=${UD}; download=${UD}; total=${total}; expire=${expire}`,
+
+					},
+				});
+			} catch (error) {
+				return new Response(base64Data ,{
+					headers: { 
+						"content-type": "text/plain; charset=utf-8",
+						"Profile-Update-Interval": `${SUBUpdateTime}`,
+						"Subscription-Userinfo": `upload=${UD}; download=${UD}; total=${total}; expire=${expire}`,
+					}
+				});
+			}
 		}
-    } catch (err) {
-      /** @type {Error} */ let e = err;
-      return new Response(e.toString());
-    }
-  },
+	}
 };
 
-function isValidIP(ip) {
-    var reg = /^[\s\S]*$/;
-    return reg.test(ip);
+async function ADD(envadd) {
+	var addtext = envadd.replace(/[	"'|\r\n]+/g, ',').replace(/,+/g, ',');	// 将空格、双引号、单引号和换行符替换为逗号
+	//console.log(addtext);
+	if (addtext.charAt(0) == ',') addtext = addtext.slice(1);
+	if (addtext.charAt(addtext.length -1) == ',') addtext = addtext.slice(0, addtext.length - 1);
+	const add = addtext.split(',');
+	//console.log(add);
+	return add ;
 }
 
-/**
- *
- * @param {import("@cloudflare/workers-types").Request} request
- */
-async function vlessOverWSHandler(request) {
-  /** @type {import("@cloudflare/workers-types").WebSocket[]} */
-  // @ts-ignore
-  const webSocketPair = new WebSocketPair();
-  const [client, webSocket] = Object.values(webSocketPair);
-
-  webSocket.accept();
-
-  let address = "";
-  let portWithRandomLog = "";
-  const log = (/** @type {string} */ info, /** @type {string | undefined} */ event) => {
-    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
-  };
-  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
-
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
-
-  /** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
-  let remoteSocketWapper = {
-    value: null,
-  };
-  let udpStreamWrite = null;
-  let isDns = false;
-
-  // ws --> remote
-  readableWebSocketStream
-    .pipeTo(
-      new WritableStream({
-        async write(chunk, controller) {
-          if (isDns && udpStreamWrite) {
-            return udpStreamWrite(chunk);
-          }
-          if (remoteSocketWapper.value) {
-            const writer = remoteSocketWapper.value.writable.getWriter();
-            await writer.write(chunk);
-            writer.releaseLock();
-            return;
-          }
-
-          const {
-            hasError,
-            message,
-            portRemote = 443,
-            addressRemote = "",
-            rawDataIndex,
-            vlessVersion = new Uint8Array([0, 0]),
-            isUDP,
-          } = await processVlessHeader(chunk, userID);
-          address = addressRemote;
-          portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
-          if (hasError) {
-            // controller.error(message);
-            throw new Error(message); // cf seems has bug, controller.error will not end stream
-            // webSocket.close(1000, message);
-            return;
-          }
-          // if UDP but port not DNS port, close it
-          if (isUDP) {
-            if (portRemote === 53) {
-              isDns = true;
-            } else {
-              // controller.error('UDP proxy only enable for DNS which is port 53');
-              throw new Error("UDP proxy only enable for DNS which is port 53"); // cf seems has bug, controller.error will not end stream
-              return;
-            }
-          }
-          // ["version", "附加信息长度 N"]
-          const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
-          const rawClientData = chunk.slice(rawDataIndex);
-
-          // TODO: support udp here when cf runtime has udp support
-          if (isDns) {
-            const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
-            udpStreamWrite = write;
-            udpStreamWrite(rawClientData);
-            return;
-          }
-          handleTCPOutBound(
-            remoteSocketWapper,
-            addressRemote,
-            portRemote,
-            rawClientData,
-            webSocket,
-            vlessResponseHeader,
-            log
-          );
-        },
-        close() {
-          log(`readableWebSocketStream is close`);
-        },
-        abort(reason) {
-          log(`readableWebSocketStream is abort`, JSON.stringify(reason));
-        },
-      })
-    )
-    .catch((err) => {
-      log("readableWebSocketStream pipeTo error", err);
-    });
-
-  return new Response(null, {
-    status: 101,
-    // @ts-ignore
-    webSocket: client,
-  });
+async function nginx() {
+	const text = `
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<title>Welcome to nginx!</title>
+	<style>
+		body {
+			width: 35em;
+			margin: 0 auto;
+			font-family: Tahoma, Verdana, Arial, sans-serif;
+		}
+	</style>
+	</head>
+	<body>
+	<h1>Welcome to nginx!</h1>
+	<p>If you see this page, the nginx web server is successfully installed and
+	working. Further configuration is required.</p>
+	
+	<p>For online documentation and support please refer to
+	<a href="http://nginx.org/">nginx.org</a>.<br/>
+	Commercial support is available at
+	<a href="http://nginx.com/">nginx.com</a>.</p>
+	
+	<p><em>Thank you for using nginx.</em></p>
+	</body>
+	</html>
+	`
+	return text ;
 }
 
-/**
- * Checks if a given UUID is present in the API response.
- * @param {string} targetUuid The UUID to search for.
- * @returns {Promise<boolean>} A Promise that resolves to true if the UUID is present in the API response, false otherwise.
- */
-async function checkUuidInApiResponse(targetUuid) {
-  // Check if any of the environment variables are empty
-
-  try {
-    const apiResponse = await getApiResponse();
-    if (!apiResponse) {
-      return false;
-    }
-    const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
-    return isUuidInResponse;
-  } catch (error) {
-    console.error("Error:", error);
-    return false;
-  }
+async function sendMessage(type, ip, add_data = "") {
+	if ( BotToken !== '' && ChatID !== ''){
+		let msg = "";
+		const response = await fetch(`http://ip-api.com/json/${ip}?lang=zh-CN`);
+		if (response.status == 200) {
+			const ipInfo = await response.json();
+			msg = `${type}\nIP: ${ip}\n国家: ${ipInfo.country}\n<tg-spoiler>城市: ${ipInfo.city}\n组织: ${ipInfo.org}\nASN: ${ipInfo.as}\n${add_data}`;
+		} else {
+			msg = `${type}\nIP: ${ip}\n<tg-spoiler>${add_data}`;
+		}
+	
+		let url = "https://api.telegram.org/bot"+ BotToken +"/sendMessage?chat_id=" + ChatID + "&parse_mode=HTML&text=" + encodeURIComponent(msg);
+		return fetch(url, {
+			method: 'get',
+			headers: {
+				'Accept': 'text/html,application/xhtml+xml,application/xml;',
+				'Accept-Encoding': 'gzip, deflate, br',
+				'User-Agent': 'Mozilla/5.0 Chrome/90.0.4430.72'
+			}
+		});
+	}
 }
 
-/**
- * Handles outbound TCP connections.
- *
- * @param {any} remoteSocket
- * @param {string} addressRemote The remote address to connect to.
- * @param {number} portRemote The remote port to connect to.
- * @param {Uint8Array} rawClientData The raw client data to write.
- * @param {import("@cloudflare/workers-types").WebSocket} webSocket The WebSocket to pass the remote socket to.
- * @param {Uint8Array} vlessResponseHeader The VLESS response header.
- * @param {function} log The logging function.
- * @returns {Promise<void>} The remote socket.
- */
-async function handleTCPOutBound(
-  remoteSocket,
-  addressRemote,
-  portRemote,
-  rawClientData,
-  webSocket,
-  vlessResponseHeader,
-  log
-) {
-  async function connectAndWrite(address, port) {
-    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
-    /** @type {import("@cloudflare/workers-types").Socket} */
-    const tcpSocket = connect({
-      hostname: address,
-      port: port,
-    });
-    remoteSocket.value = tcpSocket;
-    log(`connected to ${address}:${port}`);
-    const writer = tcpSocket.writable.getWriter();
-    await writer.write(rawClientData); // first write, nomal is tls client hello
-    writer.releaseLock();
-    return tcpSocket;
-  }
-
-  // if the cf connect tcp socket have no incoming data, we retry to redirect ip
-  async function retry() {
-    const tcpSocket = await connectAndWrite(proxyIP || addressRemote, proxyPort || portRemote);
-    // no matter retry success or not, close websocket
-    tcpSocket.closed
-      .catch((error) => {
-        console.log("retry tcpSocket closed error", error);
-      })
-      .finally(() => {
-        safeCloseWebSocket(webSocket);
-      });
-    remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
-  }
-
-  const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-
-  // when remoteSocket is ready, pass to websocket
-  // remote--> ws
-  remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
+function base64Decode(str) {
+	const bytes = new Uint8Array(atob(str).split('').map(c => c.charCodeAt(0)));
+	const decoder = new TextDecoder('utf-8');
+	return decoder.decode(bytes);
 }
 
-/**
- *
- * @param {import("@cloudflare/workers-types").WebSocket} webSocketServer
- * @param {string} earlyDataHeader for ws 0rtt
- * @param {(info: string)=> void} log for ws 0rtt
- */
-function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
-  let readableStreamCancel = false;
-  const stream = new ReadableStream({
-    start(controller) {
-      webSocketServer.addEventListener("message", (event) => {
-        if (readableStreamCancel) {
-          return;
-        }
-        const message = event.data;
-        controller.enqueue(message);
-      });
+async function MD5MD5(text) {
+	const encoder = new TextEncoder();
+	
+	const firstPass = await crypto.subtle.digest('MD5', encoder.encode(text));
+	const firstPassArray = Array.from(new Uint8Array(firstPass));
+	const firstHex = firstPassArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-      // The event means that the client closed the client -> server stream.
-      // However, the server -> client stream is still open until you call close() on the server side.
-      // The WebSocket protocol says that a separate close message must be sent in each direction to fully close the socket.
-      webSocketServer.addEventListener("close", () => {
-        // client send close, need close server
-        // if stream is cancel, skip controller.close
-        safeCloseWebSocket(webSocketServer);
-        if (readableStreamCancel) {
-          return;
-        }
-        controller.close();
-      });
-      webSocketServer.addEventListener("error", (err) => {
-        log("webSocketServer has error");
-        controller.error(err);
-      });
-      // for ws 0rtt
-      const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
-      if (error) {
-        controller.error(error);
-      } else if (earlyData) {
-        controller.enqueue(earlyData);
-      }
-    },
-
-    pull(controller) {
-      // if ws can stop read if stream is full, we can implement backpressure
-      // https://streams.spec.whatwg.org/#example-rs-push-backpressure
-    },
-    cancel(reason) {
-      // 1. pipe WritableStream has error, this cancel will called, so ws handle server close into here
-      // 2. if readableStream is cancel, all controller.close/enqueue need skip,
-      // 3. but from testing controller.error still work even if readableStream is cancel
-      if (readableStreamCancel) {
-        return;
-      }
-      log(`ReadableStream was canceled, due to ${reason}`);
-      readableStreamCancel = true;
-      safeCloseWebSocket(webSocketServer);
-    },
-  });
-
-  return stream;
+	const secondPass = await crypto.subtle.digest('MD5', encoder.encode(firstHex.slice(7, 27)));
+	const secondPassArray = Array.from(new Uint8Array(secondPass));
+	const secondHex = secondPassArray.map(b => b.toString(16).padStart(2, '0')).join('');
+	
+	return secondHex.toLowerCase();
 }
 
-// https://xtls.github.io/development/protocols/vless.html
-// https://github.com/zizifn/excalidraw-backup/blob/main/v2ray-protocol.excalidraw
+function clashFix(content) {
+	if(content.includes('wireguard') && !content.includes('remote-dns-resolve')){
+		let lines;
+		if (content.includes('\r\n')){
+			lines = content.split('\r\n');
+		} else {
+			lines = content.split('\n');
+		}
+	
+		let result = "";
+		for (let line of lines) {
+			if (line.includes('type: wireguard')) {
+				const 备改内容 = `, mtu: 1280, udp: true`;
+				const 正确内容 = `, mtu: 1280, remote-dns-resolve: true, udp: true`;
+				result += line.replace(new RegExp(备改内容, 'g'), 正确内容) + '\n';
+			} else {
+				result += line + '\n';
+			}
+		}
 
-/**
- *
- * @param { ArrayBuffer} vlessBuffer
- * @param {string} userID
- * @returns
- */
-async function processVlessHeader(vlessBuffer, userID) {
-  if (vlessBuffer.byteLength < 24) {
-    return {
-      hasError: true,
-      message: "invalid data",
-    };
-  }
-  const version = new Uint8Array(vlessBuffer.slice(0, 1));
-  let isValidUser = false;
-  let isUDP = false;
-  const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
-  const slicedBufferString = stringify(slicedBuffer);
-
-  const uuids = userID.includes(",") ? userID.split(",") : [userID];
-
-  const checkUuidInApi = await checkUuidInApiResponse(slicedBufferString);
-  isValidUser = uuids.some((userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim());
-
-  console.log(`checkUuidInApi: ${await checkUuidInApiResponse(slicedBufferString)}, userID: ${slicedBufferString}`);
-
-  if (!isValidUser) {
-    return {
-      hasError: true,
-      message: "invalid user",
-    };
-  }
-
-  const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
-  //skip opt for now
-
-  const command = new Uint8Array(vlessBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
-
-  // 0x01 TCP
-  // 0x02 UDP
-  // 0x03 MUX
-  if (command === 1) {
-  } else if (command === 2) {
-    isUDP = true;
-  } else {
-    return {
-      hasError: true,
-      message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`,
-    };
-  }
-  const portIndex = 18 + optLength + 1;
-  const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
-  // port is big-Endian in raw data etc 80 == 0x005d
-  const portRemote = new DataView(portBuffer).getUint16(0);
-
-  let addressIndex = portIndex + 2;
-  const addressBuffer = new Uint8Array(vlessBuffer.slice(addressIndex, addressIndex + 1));
-
-  // 1--> ipv4  addressLength =4
-  // 2--> domain name addressLength=addressBuffer[1]
-  // 3--> ipv6  addressLength =16
-  const addressType = addressBuffer[0];
-  let addressLength = 0;
-  let addressValueIndex = addressIndex + 1;
-  let addressValue = "";
-  switch (addressType) {
-    case 1:
-      addressLength = 4;
-      addressValue = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join(".");
-      break;
-    case 2:
-      addressLength = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + 1))[0];
-      addressValueIndex += 1;
-      addressValue = new TextDecoder().decode(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
-      break;
-    case 3:
-      addressLength = 16;
-      const dataView = new DataView(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
-      // 2001:0db8:85a3:0000:0000:8a2e:0370:7334
-      const ipv6 = [];
-      for (let i = 0; i < 8; i++) {
-        ipv6.push(dataView.getUint16(i * 2).toString(16));
-      }
-      addressValue = ipv6.join(":");
-      // seems no need add [] for ipv6
-      break;
-    default:
-      return {
-        hasError: true,
-        message: `invild  addressType is ${addressType}`,
-      };
-  }
-  if (!addressValue) {
-    return {
-      hasError: true,
-      message: `addressValue is empty, addressType is ${addressType}`,
-    };
-  }
-
-  return {
-    hasError: false,
-    addressRemote: addressValue,
-    addressType,
-    portRemote,
-    rawDataIndex: addressValueIndex + addressLength,
-    vlessVersion: version,
-    isUDP,
-  };
+		content = result;
+	}
+	return content;
 }
 
-/**
- *
- * @param {import("@cloudflare/workers-types").Socket} remoteSocket
- * @param {import("@cloudflare/workers-types").WebSocket} webSocket
- * @param {ArrayBuffer} vlessResponseHeader
- * @param {(() => Promise<void>) | null} retry
- * @param {*} log
- */
-async function remoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log) {
-  // remote--> ws
-  let remoteChunkCount = 0;
-  let chunks = [];
-  /** @type {ArrayBuffer | null} */
-  let vlessHeader = vlessResponseHeader;
-  let hasIncomingData = false; // check if remoteSocket has incoming data
-  await remoteSocket.readable
-    .pipeTo(
-      new WritableStream({
-        start() {},
-        /**
-         *
-         * @param {Uint8Array} chunk
-         * @param {*} controller
-         */
-        async write(chunk, controller) {
-          hasIncomingData = true;
-          // remoteChunkCount++;
-          if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-            controller.error("webSocket.readyState is not open, maybe close");
-          }
-          if (vlessHeader) {
-            webSocket.send(await new Blob([vlessHeader, chunk]).arrayBuffer());
-            vlessHeader = null;
-          } else {
-            // seems no need rate limit this, CF seems fix this??..
-            // if (remoteChunkCount > 20000) {
-            // 	// cf one package is 4096 byte(4kb),  4096 * 20000 = 80M
-            // 	await delay(1);
-            // }
-            webSocket.send(chunk);
-          }
-        },
-        close() {
-          log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
-          // safeCloseWebSocket(webSocket); // no need server close websocket frist for some case will casue HTTP ERR_CONTENT_LENGTH_MISMATCH issue, client will send close event anyway.
-        },
-        abort(reason) {
-          console.error(`remoteConnection!.readable abort`, reason);
-        },
-      })
-    )
-    .catch((error) => {
-      console.error(`remoteSocketToWS has exception `, error.stack || error);
-      safeCloseWebSocket(webSocket);
-    });
+async function proxyURL(proxyURL, url) {
+	const URLs = await ADD(proxyURL);
+	const fullURL = URLs[Math.floor(Math.random() * URLs.length)];
 
-  // seems is cf connect socket have error,
-  // 1. Socket.closed will have error
-  // 2. Socket.readable will be close without any data coming
-  if (hasIncomingData === false && retry) {
-    log(`retry`);
-    retry();
-  }
+	// 解析目标 URL
+	let parsedURL = new URL(fullURL);
+	console.log(parsedURL);
+	// 提取并可能修改 URL 组件
+	let URLProtocol = parsedURL.protocol.slice(0, -1) || 'https';
+	let URLHostname = parsedURL.hostname;
+	let URLPathname = parsedURL.pathname;
+	let URLSearch = parsedURL.search;
+
+	// 处理 pathname
+	if (URLPathname.charAt(URLPathname.length - 1) == '/') {
+		URLPathname = URLPathname.slice(0, -1);
+	}
+	URLPathname += url.pathname;
+
+	// 构建新的 URL
+	let newURL = `${URLProtocol}://${URLHostname}${URLPathname}${URLSearch}`;
+
+	// 反向代理请求
+	let response = await fetch(newURL);
+
+	// 创建新的响应
+	let newResponse = new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers: response.headers
+	});
+
+	// 添加自定义头部，包含 URL 信息
+	//newResponse.headers.set('X-Proxied-By', 'Cloudflare Worker');
+	//newResponse.headers.set('X-Original-URL', fullURL);
+	newResponse.headers.set('X-New-URL', newURL);
+
+	return newResponse;
 }
 
-/**
- *
- * @param {string} base64Str
- * @returns
- */
-function base64ToArrayBuffer(base64Str) {
-  if (!base64Str) {
-    return { error: null };
-  }
-  try {
-    // go use modified Base64 for URL rfc4648 which js atob not support
-    base64Str = base64Str.replace(/-/g, "+").replace(/_/g, "/");
-    const decode = atob(base64Str);
-    const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
-    return { earlyData: arryBuffer.buffer, error: null };
-  } catch (error) {
-    return { error };
-  }
-}
+async function getSUB(api, request, 追加UA, userAgentHeader) {
+	if (!api || api.length === 0) {
+		return [];
+	}
+	let newapi = "";
+	let 订阅转换URLs = "";
+	let 异常订阅 = "";
+	const controller = new AbortController(); // 创建一个AbortController实例，用于取消请求
+	const timeout = setTimeout(() => {
+		controller.abort(); // 2秒后取消所有请求
+	}, 2000);
 
-/**
- * This is not real UUID validation
- * @param {string} uuid
- */
-function isValidUUID(uuid) {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
+	try {
+		// 使用Promise.allSettled等待所有API请求完成，无论成功或失败
+		const responses = await Promise.allSettled(api.map(apiUrl => getUrl(request, apiUrl, 追加UA, userAgentHeader).then(response => response.ok ? response.text() : Promise.reject(response))));
 
-const WS_READY_STATE_OPEN = 1;
-const WS_READY_STATE_CLOSING = 2;
-/**
- * Normally, WebSocket will not has exceptions when close.
- * @param {import("@cloudflare/workers-types").WebSocket} socket
- */
-function safeCloseWebSocket(socket) {
-  try {
-    if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
-      socket.close();
-    }
-  } catch (error) {
-    console.error("safeCloseWebSocket error", error);
-  }
-}
+		// 遍历所有响应
+		const modifiedResponses = responses.map((response, index) => {
+			// 检查是否请求成功
+			if (response.status === 'rejected') {
+				const reason = response.reason;
+				if (reason && reason.name === 'AbortError') {
+					return {
+						status: '超时',
+						value: null,
+						apiUrl: api[index] // 将原始的apiUrl添加到返回对象中
+					};
+				}
+				console.error(`请求失败: ${api[index]}, 错误信息: ${reason.status} ${reason.statusText}`);
+				return {
+					status: '请求失败',
+					value: null,
+					apiUrl: api[index] // 将原始的apiUrl添加到返回对象中
+				};
+			}
+			return {
+				status: response.status,
+				value: response.value,
+				apiUrl: api[index] // 将原始的apiUrl添加到返回对象中
+			};
+		});
 
-const byteToHex = [];
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 256).toString(16).slice(1));
-}
-function unsafeStringify(arr, offset = 0) {
-  return (
-    byteToHex[arr[offset + 0]] +
-    byteToHex[arr[offset + 1]] +
-    byteToHex[arr[offset + 2]] +
-    byteToHex[arr[offset + 3]] +
-    "-" +
-    byteToHex[arr[offset + 4]] +
-    byteToHex[arr[offset + 5]] +
-    "-" +
-    byteToHex[arr[offset + 6]] +
-    byteToHex[arr[offset + 7]] +
-    "-" +
-    byteToHex[arr[offset + 8]] +
-    byteToHex[arr[offset + 9]] +
-    "-" +
-    byteToHex[arr[offset + 10]] +
-    byteToHex[arr[offset + 11]] +
-    byteToHex[arr[offset + 12]] +
-    byteToHex[arr[offset + 13]] +
-    byteToHex[arr[offset + 14]] +
-    byteToHex[arr[offset + 15]]
-  ).toLowerCase();
-}
-function stringify(arr, offset = 0) {
-  const uuid = unsafeStringify(arr, offset);
-  if (!isValidUUID(uuid)) {
-    throw TypeError("Stringified UUID is invalid");
-  }
-  return uuid;
-}
- 
-/**
- *
- * @param {import("@cloudflare/workers-types").WebSocket} webSocket
- * @param {ArrayBuffer} vlessResponseHeader
- * @param {(string)=> void} log
- */
-async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
-  let isVlessHeaderSent = false;
-  const transformStream = new TransformStream({
-    start(controller) {},
-    transform(chunk, controller) {
-      // udp message 2 byte is the the length of udp data
-      // TODO: this should have bug, beacsue maybe udp chunk can be in two websocket message
-      for (let index = 0; index < chunk.byteLength; ) {
-        const lengthBuffer = chunk.slice(index, index + 2);
-        const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
-        const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPakcetLength));
-        index = index + 2 + udpPakcetLength;
-        controller.enqueue(udpData);
-      }
-    },
-    flush(controller) {},
-  });
+		console.log(modifiedResponses); // 输出修改后的响应数组
 
-  // only handle dns udp for now
-  transformStream.readable
-    .pipeTo(
-      new WritableStream({
-        async write(chunk) {
-          const resp = await fetch(
-            dohURL, // dns server url
-            {
-              method: "POST",
-              headers: {
-                "content-type": "application/dns-message",
-              },
-              body: chunk,
-            }
-          );
-          const dnsQueryResult = await resp.arrayBuffer();
-          const udpSize = dnsQueryResult.byteLength;
-          // console.log([...new Uint8Array(dnsQueryResult)].map((x) => x.toString(16)));
-          const udpSizeBuffer = new Uint8Array([(udpSize >> 8) & 0xff, udpSize & 0xff]);
-          if (webSocket.readyState === WS_READY_STATE_OPEN) {
-            log(`doh success and dns message length is ${udpSize}`);
-            if (isVlessHeaderSent) {
-              webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-            } else {
-              webSocket.send(await new Blob([vlessResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-              isVlessHeaderSent = true;
-            }
-          }
-        },
-      })
-    )
-    .catch((error) => {
-      log("dns udp has error" + error);
-    });
-
-  const writer = transformStream.writable.getWriter();
-
-  return {
-    /**
-     *
-     * @param {Uint8Array} chunk
-     */
-    write(chunk) {
-      writer.write(chunk);
-    },
-  };
-}
-
-/**
- *
- * @param {string} userID
- * @param {string | null} hostName
- * @returns {string}
- */
-function getVLESSConfig(userID, hostName) {
-  const wvlessws = `vless\u003A//${userID}\u0040${CDNIP}:8880?encryption=none&security=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#${hostName}`;
-  const pvlesswstls = `vless\u003A//${userID}\u0040${CDNIP}:8443?encryption=none&security=tls&type=ws&host=${hostName}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2560#${hostName}`;
-  const note = `甬哥博客地址：https://ygkkk.blogspot.com\n甬哥YouTube频道：https://www.youtube.com/@ygkkk\n甬哥TG电报群组：https://t.me/ygkkktg\n甬哥TG电报频道：https://t.me/ygkkktgpd\n\nProxyIP全局运行中：${proxyIP}`;
-  const ty = `https://${hostName}/${userID}/ty`
-  const cl = `https://${hostName}/${userID}/cl`
-  const sb = `https://${hostName}/${userID}/sb`
-  const pty = `https://${hostName}/${userID}/pty`
-  const pcl = `https://${hostName}/${userID}/pcl`
-  const psb = `https://${hostName}/${userID}/psb`
-  const noteshow = note.replace(/\n/g, '<br>');
-  const displayHtml = `
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-<style>
-.limited-width {
-    max-width: 200px;
-    overflow: auto;
-    word-wrap: break-word;
-}
-</style>
-</head>
-<script>
-function copyToClipboard(text) {
-  const input = document.createElement('textarea');
-  input.style.position = 'fixed';
-  input.style.opacity = 0;
-  input.value = text;
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('Copy');
-  document.body.removeChild(input);
-  alert('已复制到剪贴板');
-}
-</script>
-`;
-if (hostName.includes("workers.dev")) {
-return `
-<br>
-<br>
-${displayHtml}
-<body>
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>Cloudflare-workers/pages-vless代理脚本 V24.10.18</h1>
-	    <hr>
-            <p>${noteshow}</p>
-            <hr>
-	    <hr>
-	    <hr>
-            <br>
-            <br>
-            <h3>1：CF-workers-vless+ws节点</h3>
-			<table class="table">
-				<thead>
-					<tr>
-						<th>节点特色：</th>
-						<th>单节点链接如下：</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td class="limited-width">关闭了TLS加密，无视域名阻断</td>
-						<td class="limited-width">${wvlessws}</td>
-						<td><button class="btn btn-primary" onclick="copyToClipboard('${wvlessws}')">点击复制链接</button></td>
-					</tr>
-				</tbody>
-			</table>
-            <h5>客户端参数如下：</h5>
-            <ul>
-                <li>客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP 或者 反代IP</li>
-                <li>端口(port)：7个http端口可任意选择(80、8080、8880、2052、2082、2086、2095)，或反代IP对应端口</li>
-                <li>用户ID(uuid)：${userID}</li>
-                <li>传输协议(network)：ws 或者 websocket</li>
-                <li>伪装域名(host)：${hostName}</li>
-                <li>路径(path)：/?ed=2560</li>
-		<li>传输安全(TLS)：关闭</li>
-            </ul>
-            <hr>
-			<hr>
-			<hr>
-            <br>
-            <br>
-            <h3>2：CF-workers-vless+ws+tls节点</h3>
-			<table class="table">
-				<thead>
-					<tr>
-						<th>节点特色：</th>
-						<th>单节点链接如下：</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td class="limited-width">启用了TLS加密，<br>如果客户端支持分片(Fragment)功能，建议开启，防止域名阻断</td>
-						<td class="limited-width">${pvlesswstls}</td>	
-						<td><button class="btn btn-primary" onclick="copyToClipboard('${pvlesswstls}')">点击复制链接</button></td>
-					</tr>
-				</tbody>
-			</table>
-            <h5>客户端参数如下：</h5>
-            <ul>
-                <li>客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP 或者 反代IP</li>
-                <li>端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)，或反代IP对应端口</li>
-                <li>用户ID(uuid)：${userID}</li>
-                <li>传输协议(network)：ws 或者 websocket</li>
-                <li>伪装域名(host)：${hostName}</li>
-                <li>路径(path)：/?ed=2560</li>
-                <li>传输安全(TLS)：开启</li>
-                <li>跳过证书验证(allowlnsecure)：false</li>
-			</ul>
-			<hr>
-			<hr>
-			<hr>
-			<br>	
-			<br>
-			<h3>3：聚合通用、Clash-meta、Sing-box订阅链接如下：</h3>
-			<hr>
-			<p>注意：<br>1、默认每个订阅链接包含TLS+非TLS共13个端口节点<br>2、当前workers域名作为订阅链接，需通过代理进行订阅更新<br>3、如使用的客户端不支持分片功能，则TLS节点不可用</p>
-			<hr>
-			<table class="table">
-					<thead>
-						<tr>
-							<th>聚合通用订阅链接：</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td class="limited-width">${ty}</td>	
-							<td><button class="btn btn-primary" onclick="copyToClipboard('${ty}')">点击复制链接</button></td>
-						</tr>
-					</tbody>
-				</table>	
-
-				<table class="table">
-						<thead>
-							<tr>
-								<th>Clash-meta订阅链接：</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td class="limited-width">${cl}</td>	
-								<td><button class="btn btn-primary" onclick="copyToClipboard('${cl}')">点击复制链接</button></td>
-							</tr>
-						</tbody>
-					</table>
-
-					<table class="table">
-					<thead>
-						<tr>
-							<th>Sing-box订阅链接：</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td class="limited-width">${sb}</td>	
-							<td><button class="btn btn-primary" onclick="copyToClipboard('${sb}')">点击复制链接</button></td>
-						</tr>
-					</tbody>
-				</table>
-				<br>
-				<br>
-        </div>
-    </div>
-</div>
-</body>
-`;
-  } else {
-    return `
-<br>
-<br>
-${displayHtml}
-<body>
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>Cloudflare-workers/pages-vless代理脚本 V24.10.18</h1>
-			<hr>
-            <p>${noteshow}</p>
-            <hr>
-			<hr>
-			<hr>
-            <br>
-            <br>
-            <h3>1：CF-pages/workers/自定义域-vless+ws+tls节点</h3>
-			<table class="table">
-				<thead>
-					<tr>
-						<th>节点特色：</th>
-						<th>单节点链接如下：</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td class="limited-width">启用了TLS加密，<br>如果客户端支持分片(Fragment)功能，可开启，防止域名阻断</td>
-						<td class="limited-width">${pvlesswstls}</td>
-						<td><button class="btn btn-primary" onclick="copyToClipboard('${pvlesswstls}')">点击复制链接</button></td>
-					</tr>
-				</tbody>
-			</table>
-            <h5>客户端参数如下：</h5>
-            <ul>
-                <li>客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP 或者 反代IP</li>
-                <li>端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)，或反代IP对应端口</li>
-                <li>用户ID(uuid)：${userID}</li>
-                <li>传输协议(network)：ws 或者 websocket</li>
-                <li>伪装域名(host)：${hostName}</li>
-                <li>路径(path)：/?ed=2560</li>
-                <li>传输安全(TLS)：开启</li>
-                <li>跳过证书验证(allowlnsecure)：false</li>
-			</ul>
-            <hr>
-			<hr>
-			<hr>
-            <br>
-            <br>
-			<h3>2：聚合通用、Clash-meta、Sing-box订阅链接如下：</h3>
-			<hr>
-			<p>注意：以下订阅链接仅6个TLS端口节点</p>
-			<hr>
-			<table class="table">
-					<thead>
-						<tr>
-							<th>聚合通用订阅链接：</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td class="limited-width">${pty}</td>	
-							<td><button class="btn btn-primary" onclick="copyToClipboard('${pty}')">点击复制链接</button></td>
-						</tr>
-					</tbody>
-				</table>	
-
-				<table class="table">
-						<thead>
-							<tr>
-								<th>Clash-meta订阅链接：</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td class="limited-width">${pcl}</td>	
-								<td><button class="btn btn-primary" onclick="copyToClipboard('${pcl}')">点击复制链接</button></td>
-							</tr>
-						</tbody>
-					</table>
-
-					<table class="table">
-					<thead>
-						<tr>
-							<th>Sing-box订阅链接：</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td class="limited-width">${psb}</td>	
-							<td><button class="btn btn-primary" onclick="copyToClipboard('${psb}')">点击复制链接</button></td>
-						</tr>
-					</tbody>
-				</table>
-				<br>
-				<br>
-        </div>
-    </div>
-</div>
-</body>
-`;
-  }
-}
-
-function gettyConfig(userID, hostName) {
-	const vlessshare = btoa(`vless\u003A//${userID}\u0040${IP1}:${PT1}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V1_${IP1}_${PT1}\nvless\u003A//${userID}\u0040${IP2}:${PT2}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V2_${IP2}_${PT2}\nvless\u003A//${userID}\u0040${IP3}:${PT3}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V3_${IP3}_${PT3}\nvless\u003A//${userID}\u0040${IP4}:${PT4}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V4_${IP4}_${PT4}\nvless\u003A//${userID}\u0040${IP5}:${PT5}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V5_${IP5}_${PT5}\nvless\u003A//${userID}\u0040${IP6}:${PT6}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V6_${IP6}_${PT6}\nvless\u003A//${userID}\u0040${IP7}:${PT7}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V7_${IP7}_${PT7}\nvless\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\nvless\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\nvless\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\nvless\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\nvless\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\nvless\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`);
-		return `${vlessshare}`
+		for (const response of modifiedResponses) {
+			// 检查响应状态是否为'fulfilled'
+			if (response.status === 'fulfilled') {
+				const content = await response.value || 'null'; // 获取响应的内容
+				if (content.includes('proxies') && content.includes('proxy-groups')) {
+					订阅转换URLs += "|" + response.apiUrl; // Clash 配置
+				} else if (content.includes('outbounds') && content.includes('inbounds')) {
+					订阅转换URLs += "|" + response.apiUrl; // Singbox 配置
+				} else if (content.includes('://')) {
+					newapi += content + '\n'; // 追加内容
+				} else if (isValidBase64(content)){
+					newapi += base64Decode(content) + '\n'; // 解码并追加内容
+				} else {
+					const 异常订阅LINK = `trojan://CMLiussss@127.0.0.1:8888?security=tls&allowInsecure=1&type=tcp&headerType=none#%E5%BC%82%E5%B8%B8%E8%AE%A2%E9%98%85%20${response.apiUrl.split('://')[1].split('/')[0]}`;
+					console.log(异常订阅LINK);
+					异常订阅 += `${异常订阅LINK}\n`;
+				}
+			}
+		}
+	} catch (error) {
+		console.error(error); // 捕获并输出错误信息
+	} finally {
+		clearTimeout(timeout); // 清除定时器
 	}
 
-function getclConfig(userID, hostName) {
-return `
-port: 7890
-allow-lan: true
-mode: rule
-log-level: info
-unified-delay: true
-global-client-fingerprint: chrome
-dns:
-  enable: true
-  listen: :53
-  ipv6: true
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  default-nameserver: 
-    - 223.5.5.5
-    - 114.114.114.114
-    - 8.8.8.8
-  nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-  fallback:
-    - https://1.0.0.1/dns-query
-    - tls://dns.google
-  fallback-filter:
-    geoip: true
-    geoip-code: CN
-    ipcidr:
-      - 240.0.0.0/4
-
-proxies:
-- name: CF_V1_${IP1}_${PT1}
-  type: vless
-  server: ${IP1}
-  port: ${PT1}
-  uuid: ${userID}
-  udp: false
-  tls: false
-  network: ws
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V2_${IP2}_${PT2}
-  type: vless
-  server: ${IP2}
-  port: ${PT2}
-  uuid: ${userID}
-  udp: false
-  tls: false
-  network: ws
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V3_${IP3}_${PT3}
-  type: vless
-  server: ${IP3}
-  port: ${PT3}
-  uuid: ${userID}
-  udp: false
-  tls: false
-  network: ws
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V4_${IP4}_${PT4}
-  type: vless
-  server: ${IP4}
-  port: ${PT4}
-  uuid: ${userID}
-  udp: false
-  tls: false
-  network: ws
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V5_${IP5}_${PT5}
-  type: vless
-  server: ${IP5}
-  port: ${PT5}
-  uuid: ${userID}
-  udp: false
-  tls: false
-  network: ws
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V6_${IP6}_${PT6}
-  type: vless
-  server: ${IP6}
-  port: ${PT6}
-  uuid: ${userID}
-  udp: false
-  tls: false
-  network: ws
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V7_${IP7}_${PT7}
-  type: vless
-  server: ${IP7}
-  port: ${PT7}
-  uuid: ${userID}
-  udp: false
-  tls: false
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V8_${IP8}_${PT8}
-  type: vless
-  server: ${IP8}
-  port: ${PT8}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V9_${IP9}_${PT9}
-  type: vless
-  server: ${IP9}
-  port: ${PT9}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V10_${IP10}_${PT10}
-  type: vless
-  server: ${IP10}
-  port: ${PT10}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V11_${IP11}_${PT11}
-  type: vless
-  server: ${IP11}
-  port: ${PT11}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V12_${IP12}_${PT12}
-  type: vless
-  server: ${IP12}
-  port: ${PT12}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V13_${IP13}_${PT13}
-  type: vless
-  server: ${IP13}
-  port: ${PT13}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-proxy-groups:
-- name: 负载均衡
-  type: load-balance
-  url: http://www.gstatic.com/generate_204
-  interval: 300
-  proxies:
-    - CF_V1_${IP1}_${PT1}
-    - CF_V2_${IP2}_${PT2}
-    - CF_V3_${IP3}_${PT3}
-    - CF_V4_${IP4}_${PT4}
-    - CF_V5_${IP5}_${PT5}
-    - CF_V6_${IP6}_${PT6}
-    - CF_V7_${IP7}_${PT7}
-    - CF_V8_${IP8}_${PT8}
-    - CF_V9_${IP9}_${PT9}
-    - CF_V10_${IP10}_${PT10}
-    - CF_V11_${IP11}_${PT11}
-    - CF_V12_${IP12}_${PT12}
-    - CF_V13_${IP13}_${PT13}
-
-- name: 自动选择
-  type: url-test
-  url: http://www.gstatic.com/generate_204
-  interval: 300
-  tolerance: 50
-  proxies:
-    - CF_V1_${IP1}_${PT1}
-    - CF_V2_${IP2}_${PT2}
-    - CF_V3_${IP3}_${PT3}
-    - CF_V4_${IP4}_${PT4}
-    - CF_V5_${IP5}_${PT5}
-    - CF_V6_${IP6}_${PT6}
-    - CF_V7_${IP7}_${PT7}
-    - CF_V8_${IP8}_${PT8}
-    - CF_V9_${IP9}_${PT9}
-    - CF_V10_${IP10}_${PT10}
-    - CF_V11_${IP11}_${PT11}
-    - CF_V12_${IP12}_${PT12}
-    - CF_V13_${IP13}_${PT13}
-
-- name: 🌍选择代理
-  type: select
-  proxies:
-    - 负载均衡
-    - 自动选择
-    - DIRECT
-    - CF_V1_${IP1}_${PT1}
-    - CF_V2_${IP2}_${PT2}
-    - CF_V3_${IP3}_${PT3}
-    - CF_V4_${IP4}_${PT4}
-    - CF_V5_${IP5}_${PT5}
-    - CF_V6_${IP6}_${PT6}
-    - CF_V7_${IP7}_${PT7}
-    - CF_V8_${IP8}_${PT8}
-    - CF_V9_${IP9}_${PT9}
-    - CF_V10_${IP10}_${PT10}
-    - CF_V11_${IP11}_${PT11}
-    - CF_V12_${IP12}_${PT12}
-    - CF_V13_${IP13}_${PT13}
-
-rules:
-  - GEOIP,LAN,DIRECT
-  - GEOIP,CN,DIRECT
-  - MATCH,🌍选择代理`
-}
-	
-function getsbConfig(userID, hostName) {
-return `{
-	  "log": {
-		"disabled": false,
-		"level": "info",
-		"timestamp": true
-	  },
-	  "experimental": {
-		"clash_api": {
-		  "external_controller": "127.0.0.1:9090",
-		  "external_ui": "ui",
-		  "external_ui_download_url": "",
-		  "external_ui_download_detour": "",
-		  "secret": "",
-		  "default_mode": "Rule"
-		},
-		"cache_file": {
-		  "enabled": true,
-		  "path": "cache.db",
-		  "store_fakeip": true
-		}
-	  },
-	  "dns": {
-		"servers": [
-		  {
-			"tag": "proxydns",
-			"address": "tls://8.8.8.8/dns-query",
-			"detour": "select"
-		  },
-		  {
-			"tag": "localdns",
-			"address": "h3://223.5.5.5/dns-query",
-			"detour": "direct"
-		  },
-		  {
-			"address": "rcode://refused",
-			"tag": "block"
-		  },
-		  {
-			"tag": "dns_fakeip",
-			"address": "fakeip"
-		  }
-		],
-		"rules": [
-		  {
-			"outbound": "any",
-			"server": "localdns",
-			"disable_cache": true
-		  },
-		  {
-			"clash_mode": "Global",
-			"server": "proxydns"
-		  },
-		  {
-			"clash_mode": "Direct",
-			"server": "localdns"
-		  },
-		  {
-			"rule_set": "geosite-cn",
-			"server": "localdns"
-		  },
-		  {
-			"rule_set": "geosite-geolocation-!cn",
-			"server": "proxydns"
-		  },
-		  {
-			"rule_set": "geosite-geolocation-!cn",
-			"query_type": [
-			  "A",
-			  "AAAA"
-			],
-			"server": "dns_fakeip"
-		  }
-		],
-		"fakeip": {
-		  "enabled": true,
-		  "inet4_range": "198.18.0.0/15",
-		  "inet6_range": "fc00::/18"
-		},
-		"independent_cache": true,
-		"final": "proxydns"
-	  },
-	  "inbounds": [
-		{
-		  "type": "tun",
-		  "inet4_address": "172.19.0.1/30",
-		  "inet6_address": "fd00::1/126",
-		  "auto_route": true,
-		  "strict_route": true,
-		  "sniff": true,
-		  "sniff_override_destination": true,
-		  "domain_strategy": "prefer_ipv4"
-		}
-	  ],
-	  "outbounds": [
-		{
-		  "tag": "select",
-		  "type": "selector",
-		  "default": "auto",
-		  "outbounds": [
-			"auto",
-			"CF_V1_${IP1}_${PT1}",
-			"CF_V2_${IP2}_${PT2}",
-			"CF_V3_${IP3}_${PT3}",
-			"CF_V4_${IP4}_${PT4}",
-			"CF_V5_${IP5}_${PT5}",
-			"CF_V6_${IP6}_${PT6}",
-			"CF_V7_${IP7}_${PT7}",
-			"CF_V8_${IP8}_${PT8}",
-			"CF_V9_${IP9}_${PT9}",
-			"CF_V10_${IP10}_${PT10}",
-			"CF_V11_${IP11}_${PT11}",
-			"CF_V12_${IP12}_${PT12}",
-			"CF_V13_${IP13}_${PT13}"
-		  ]
-		},
-		{
-		  "server": "${IP1}",
-		  "server_port": ${PT1},
-		  "tag": "CF_V1_${IP1}_${PT1}",
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP2}",
-		  "server_port": ${PT2},
-		  "tag": "CF_V2_${IP2}_${PT2}",
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP3}",
-		  "server_port": ${PT3},
-		  "tag": "CF_V3_${IP3}_${PT3}",
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP4}",
-		  "server_port": ${PT4},
-		  "tag": "CF_V4_${IP4}_${PT4}",
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP5}",
-		  "server_port": ${PT5},
-		  "tag": "CF_V5_${IP5}_${PT5}",
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP6}",
-		  "server_port": ${PT6},
-		  "tag": "CF_V6_${IP6}_${PT6}",
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP7}",
-		  "server_port": ${PT7},
-		  "tag": "CF_V7_${IP7}_${PT7}",
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{     
-		  "server": "${IP8}",
-		  "server_port": ${PT8},
-		  "tag": "CF_V8_${IP8}_${PT8}",
-		  "tls": {
-			"enabled": true,
-			"server_name": "${hostName}",
-			"insecure": false,
-			"utls": {
-			  "enabled": true,
-			  "fingerprint": "chrome"
-			}
-		  },
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP9}",
-		  "server_port": ${PT9},
-		  "tag": "CF_V9_${IP9}_${PT9}",
-		  "tls": {
-			"enabled": true,
-			"server_name": "${hostName}",
-			"insecure": false,
-			"utls": {
-			  "enabled": true,
-			  "fingerprint": "chrome"
-			}
-		  },
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP10}",
-		  "server_port": ${PT10},
-		  "tag": "CF_V10_${IP10}_${PT10}",
-		  "tls": {
-			"enabled": true,
-			"server_name": "${hostName}",
-			"insecure": false,
-			"utls": {
-			  "enabled": true,
-			  "fingerprint": "chrome"
-			}
-		  },
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP11}",
-		  "server_port": ${PT11},
-		  "tag": "CF_V11_${IP11}_${PT11}",
-		  "tls": {
-			"enabled": true,
-			"server_name": "${hostName}",
-			"insecure": false,
-			"utls": {
-			  "enabled": true,
-			  "fingerprint": "chrome"
-			}
-		  },
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP12}",
-		  "server_port": ${PT12},
-		  "tag": "CF_V12_${IP12}_${PT12}",
-		  "tls": {
-			"enabled": true,
-			"server_name": "${hostName}",
-			"insecure": false,
-			"utls": {
-			  "enabled": true,
-			  "fingerprint": "chrome"
-			}
-		  },
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "server": "${IP13}",
-		  "server_port": ${PT13},
-		  "tag": "CF_V13_${IP13}_${PT13}",
-		  "tls": {
-			"enabled": true,
-			"server_name": "${hostName}",
-			"insecure": false,
-			"utls": {
-			  "enabled": true,
-			  "fingerprint": "chrome"
-			}
-		  },
-		  "packet_encoding": "packetaddr",
-		  "transport": {
-			"headers": {
-			  "Host": [
-				"${hostName}"
-			  ]
-			},
-			"path": "/?ed=2560",
-			"type": "ws"
-		  },
-		  "type": "vless",
-		  "uuid": "${userID}"
-		},
-		{
-		  "tag": "direct",
-		  "type": "direct"
-		},
-		{
-		  "tag": "block",
-		  "type": "block"
-		},
-		{
-		  "tag": "dns-out",
-		  "type": "dns"
-		},
-		{
-		  "tag": "auto",
-		  "type": "urltest",
-		  "outbounds": [
-			"CF_V1_${IP1}_${PT1}",
-			"CF_V2_${IP2}_${PT2}",
-			"CF_V3_${IP3}_${PT3}",
-			"CF_V4_${IP4}_${PT4}",
-			"CF_V5_${IP5}_${PT5}",
-			"CF_V6_${IP6}_${PT6}",
-			"CF_V7_${IP7}_${PT7}",
-			"CF_V8_${IP8}_${PT8}",
-			"CF_V9_${IP9}_${PT9}",
-			"CF_V10_${IP10}_${PT10}",
-			"CF_V11_${IP11}_${PT11}",
-			"CF_V12_${IP12}_${PT12}",
-			"CF_V13_${IP13}_${PT13}"
-		  ],
-		  "url": "https://www.gstatic.com/generate_204",
-		  "interval": "1m",
-		  "tolerance": 50,
-		  "interrupt_exist_connections": false
-		}
-	  ],
-	  "route": {
-		"rule_set": [
-		  {
-			"tag": "geosite-geolocation-!cn",
-			"type": "remote",
-			"format": "binary",
-			"url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
-			"download_detour": "select",
-			"update_interval": "1d"
-		  },
-		  {
-			"tag": "geosite-cn",
-			"type": "remote",
-			"format": "binary",
-			"url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
-			"download_detour": "select",
-			"update_interval": "1d"
-		  },
-		  {
-			"tag": "geoip-cn",
-			"type": "remote",
-			"format": "binary",
-			"url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
-			"download_detour": "select",
-			"update_interval": "1d"
-		  }
-		],
-		"auto_detect_interface": true,
-		"final": "select",
-		"rules": [
-		  {
-			"outbound": "dns-out",
-			"protocol": "dns"
-		  },
-		  {
-			"clash_mode": "Direct",
-			"outbound": "direct"
-		  },
-		  {
-			"clash_mode": "Global",
-			"outbound": "select"
-		  },
-		  {
-			"rule_set": "geoip-cn",
-			"outbound": "direct"
-		  },
-		  {
-			"rule_set": "geosite-cn",
-			"outbound": "direct"
-		  },
-		  {
-			"ip_is_private": true,
-			"outbound": "direct"
-		  },
-		  {
-			"rule_set": "geosite-geolocation-!cn",
-			"outbound": "select"
-		  }
-		]
-	  },
-	  "ntp": {
-		"enabled": true,
-		"server": "time.apple.com",
-		"server_port": 123,
-		"interval": "30m",
-		"detour": "direct"
-	  }
-	}`
+	const 订阅内容 = await ADD(newapi + 异常订阅); // 将处理后的内容转换为数组
+	// 返回处理后的结果
+	return [订阅内容, 订阅转换URLs];
 }
 
-function getptyConfig(userID, hostName) {
-	const vlessshare = btoa(`vless\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\nvless\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\nvless\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\nvless\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\nvless\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\nvless\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`);	
-		return `${vlessshare}`
-	}
-	
-function getpclConfig(userID, hostName) {
-return `
-port: 7890
-allow-lan: true
-mode: rule
-log-level: info
-unified-delay: true
-global-client-fingerprint: chrome
-dns:
-  enable: true
-  listen: :53
-  ipv6: true
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  default-nameserver: 
-    - 223.5.5.5
-    - 114.114.114.114
-    - 8.8.8.8
-  nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-  fallback:
-    - https://1.0.0.1/dns-query
-    - tls://dns.google
-  fallback-filter:
-    geoip: true
-    geoip-code: CN
-    ipcidr:
-      - 240.0.0.0/4
+async function getUrl(request, targetUrl, 追加UA, userAgentHeader) {
+	// 设置自定义 User-Agent
+	const newHeaders = new Headers(request.headers);
+	newHeaders.set("User-Agent", `v2rayN/${追加UA} cmliu/CF-Workers-SUB ${userAgentHeader}`);
 
-proxies:
-- name: CF_V8_${IP8}_${PT8}
-  type: vless
-  server: ${IP8}
-  port: ${PT8}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
+	// 构建新的请求对象
+	const modifiedRequest = new Request(targetUrl, {
+		method: request.method,
+		headers: newHeaders,
+		body: request.method === "GET" ? null : request.body,
+		redirect: "follow"
+	});
 
-- name: CF_V9_${IP9}_${PT9}
-  type: vless
-  server: ${IP9}
-  port: ${PT9}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
+	// 输出请求的详细信息
+	console.log(`请求URL: ${targetUrl}`);
+	console.log(`请求头: ${JSON.stringify([...newHeaders])}`);
+	console.log(`请求方法: ${request.method}`);
+	console.log(`请求体: ${request.method === "GET" ? null : request.body}`);
 
-- name: CF_V10_${IP10}_${PT10}
-  type: vless
-  server: ${IP10}
-  port: ${PT10}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V11_${IP11}_${PT11}
-  type: vless
-  server: ${IP11}
-  port: ${PT11}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V12_${IP12}_${PT12}
-  type: vless
-  server: ${IP12}
-  port: ${PT12}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-- name: CF_V13_${IP13}_${PT13}
-  type: vless
-  server: ${IP13}
-  port: ${PT13}
-  uuid: ${userID}
-  udp: false
-  tls: true
-  network: ws
-  servername: ${hostName}
-  ws-opts:
-    path: "/?ed=2560"
-    headers:
-      Host: ${hostName}
-
-proxy-groups:
-- name: 负载均衡
-  type: load-balance
-  url: http://www.gstatic.com/generate_204
-  interval: 300
-  proxies:
-    - CF_V8_${IP8}_${PT8}
-    - CF_V9_${IP9}_${PT9}
-    - CF_V10_${IP10}_${PT10}
-    - CF_V11_${IP11}_${PT11}
-    - CF_V12_${IP12}_${PT12}
-    - CF_V13_${IP13}_${PT13}
-
-- name: 自动选择
-  type: url-test
-  url: http://www.gstatic.com/generate_204
-  interval: 300
-  tolerance: 50
-  proxies:
-    - CF_V8_${IP8}_${PT8}
-    - CF_V9_${IP9}_${PT9}
-    - CF_V10_${IP10}_${PT10}
-    - CF_V11_${IP11}_${PT11}
-    - CF_V12_${IP12}_${PT12}
-    - CF_V13_${IP13}_${PT13}
-
-- name: 🌍选择代理
-  type: select
-  proxies:
-    - 负载均衡
-    - 自动选择
-    - DIRECT
-    - CF_V8_${IP8}_${PT8}
-    - CF_V9_${IP9}_${PT9}
-    - CF_V10_${IP10}_${PT10}
-    - CF_V11_${IP11}_${PT11}
-    - CF_V12_${IP12}_${PT12}
-    - CF_V13_${IP13}_${PT13}
-
-rules:
-  - GEOIP,LAN,DIRECT
-  - GEOIP,CN,DIRECT
-  - MATCH,🌍选择代理`
+	// 发送请求并返回响应
+	return fetch(modifiedRequest);
 }
-		
-function getpsbConfig(userID, hostName) {
-return `{
-		  "log": {
-			"disabled": false,
-			"level": "info",
-			"timestamp": true
-		  },
-		  "experimental": {
-			"clash_api": {
-			  "external_controller": "127.0.0.1:9090",
-			  "external_ui": "ui",
-			  "external_ui_download_url": "",
-			  "external_ui_download_detour": "",
-			  "secret": "",
-			  "default_mode": "Rule"
-			},
-			"cache_file": {
-			  "enabled": true,
-			  "path": "cache.db",
-			  "store_fakeip": true
-			}
-		  },
-		  "dns": {
-			"servers": [
-			  {
-				"tag": "proxydns",
-				"address": "tls://8.8.8.8/dns-query",
-				"detour": "select"
-			  },
-			  {
-				"tag": "localdns",
-				"address": "h3://223.5.5.5/dns-query",
-				"detour": "direct"
-			  },
-			  {
-				"address": "rcode://refused",
-				"tag": "block"
-			  },
-			  {
-				"tag": "dns_fakeip",
-				"address": "fakeip"
-			  }
-			],
-			"rules": [
-			  {
-				"outbound": "any",
-				"server": "localdns",
-				"disable_cache": true
-			  },
-			  {
-				"clash_mode": "Global",
-				"server": "proxydns"
-			  },
-			  {
-				"clash_mode": "Direct",
-				"server": "localdns"
-			  },
-			  {
-				"rule_set": "geosite-cn",
-				"server": "localdns"
-			  },
-			  {
-				"rule_set": "geosite-geolocation-!cn",
-				"server": "proxydns"
-			  },
-			  {
-				"rule_set": "geosite-geolocation-!cn",
-				"query_type": [
-				  "A",
-				  "AAAA"
-				],
-				"server": "dns_fakeip"
-			  }
-			],
-			"fakeip": {
-			  "enabled": true,
-			  "inet4_range": "198.18.0.0/15",
-			  "inet6_range": "fc00::/18"
-			},
-			"independent_cache": true,
-			"final": "proxydns"
-		  },
-		  "inbounds": [
-			{
-			  "type": "tun",
-			  "inet4_address": "172.19.0.1/30",
-			  "inet6_address": "fd00::1/126",
-			  "auto_route": true,
-			  "strict_route": true,
-			  "sniff": true,
-			  "sniff_override_destination": true,
-			  "domain_strategy": "prefer_ipv4"
-			}
-		  ],
-		  "outbounds": [
-			{
-			  "tag": "select",
-			  "type": "selector",
-			  "default": "auto",
-			  "outbounds": [
-				"auto",
-				"CF_V8_${IP8}_${PT8}",
-				"CF_V9_${IP9}_${PT9}",
-				"CF_V10_${IP10}_${PT10}",
-				"CF_V11_${IP11}_${PT11}",
-				"CF_V12_${IP12}_${PT12}",
-				"CF_V13_${IP13}_${PT13}"
-			  ]
-			},
-			{
-			  "server": "${IP8}",
-			  "server_port": ${PT8},
-			  "tag": "CF_V8_${IP8}_${PT8}",
-			  "tls": {
-				"enabled": true,
-				"server_name": "${hostName}",
-				"insecure": false,
-				"utls": {
-				  "enabled": true,
-				  "fingerprint": "chrome"
-				}
-			  },
-			  "packet_encoding": "packetaddr",
-			  "transport": {
-				"headers": {
-				  "Host": [
-					"${hostName}"
-				  ]
-				},
-				"path": "/?ed=2560",
-				"type": "ws"
-			  },
-			  "type": "vless",
-			  "uuid": "${userID}"
-			},
-			{
-			  "server": "${IP9}",
-			  "server_port": ${PT9},
-			  "tag": "CF_V9_${IP9}_${PT9}",
-			  "tls": {
-				"enabled": true,
-				"server_name": "${hostName}",
-				"insecure": false,
-				"utls": {
-				  "enabled": true,
-				  "fingerprint": "chrome"
-				}
-			  },
-			  "packet_encoding": "packetaddr",
-			  "transport": {
-				"headers": {
-				  "Host": [
-					"${hostName}"
-				  ]
-				},
-				"path": "/?ed=2560",
-				"type": "ws"
-			  },
-			  "type": "vless",
-			  "uuid": "${userID}"
-			},
-			{
-			  "server": "${IP10}",
-			  "server_port": ${PT10},
-			  "tag": "CF_V10_${IP10}_${PT10}",
-			  "tls": {
-				"enabled": true,
-				"server_name": "${hostName}",
-				"insecure": false,
-				"utls": {
-				  "enabled": true,
-				  "fingerprint": "chrome"
-				}
-			  },
-			  "packet_encoding": "packetaddr",
-			  "transport": {
-				"headers": {
-				  "Host": [
-					"${hostName}"
-				  ]
-				},
-				"path": "/?ed=2560",
-				"type": "ws"
-			  },
-			  "type": "vless",
-			  "uuid": "${userID}"
-			},
-			{
-			  "server": "${IP11}",
-			  "server_port": ${PT11},
-			  "tag": "CF_V11_${IP11}_${PT11}",
-			  "tls": {
-				"enabled": true,
-				"server_name": "${hostName}",
-				"insecure": false,
-				"utls": {
-				  "enabled": true,
-				  "fingerprint": "chrome"
-				}
-			  },
-			  "packet_encoding": "packetaddr",
-			  "transport": {
-				"headers": {
-				  "Host": [
-					"${hostName}"
-				  ]
-				},
-				"path": "/?ed=2560",
-				"type": "ws"
-			  },
-			  "type": "vless",
-			  "uuid": "${userID}"
-			},
-			{
-			  "server": "${IP12}",
-			  "server_port": ${PT12},
-			  "tag": "CF_V12_${IP12}_${PT12}",
-			  "tls": {
-				"enabled": true,
-				"server_name": "${hostName}",
-				"insecure": false,
-				"utls": {
-				  "enabled": true,
-				  "fingerprint": "chrome"
-				}
-			  },
-			  "packet_encoding": "packetaddr",
-			  "transport": {
-				"headers": {
-				  "Host": [
-					"${hostName}"
-				  ]
-				},
-				"path": "/?ed=2560",
-				"type": "ws"
-			  },
-			  "type": "vless",
-			  "uuid": "${userID}"
-			},
-			{
-			  "server": "${IP13}",
-			  "server_port": ${PT13},
-			  "tag": "CF_V13_${IP13}_${PT13}",
-			  "tls": {
-				"enabled": true,
-				"server_name": "${hostName}",
-				"insecure": false,
-				"utls": {
-				  "enabled": true,
-				  "fingerprint": "chrome"
-				}
-			  },
-			  "packet_encoding": "packetaddr",
-			  "transport": {
-				"headers": {
-				  "Host": [
-					"${hostName}"
-				  ]
-				},
-				"path": "/?ed=2560",
-				"type": "ws"
-			  },
-			  "type": "vless",
-			  "uuid": "${userID}"
-			},
-			{
-			  "tag": "direct",
-			  "type": "direct"
-			},
-			{
-			  "tag": "block",
-			  "type": "block"
-			},
-			{
-			  "tag": "dns-out",
-			  "type": "dns"
-			},
-			{
-			  "tag": "auto",
-			  "type": "urltest",
-			  "outbounds": [
-				"CF_V8_${IP8}_${PT8}",
-				"CF_V9_${IP9}_${PT9}",
-				"CF_V10_${IP10}_${PT10}",
-				"CF_V11_${IP11}_${PT11}",
-				"CF_V12_${IP12}_${PT12}",
-				"CF_V13_${IP13}_${PT13}"
-			  ],
-			  "url": "https://www.gstatic.com/generate_204",
-			  "interval": "1m",
-			  "tolerance": 50,
-			  "interrupt_exist_connections": false
-			}
-		  ],
-		  "route": {
-			"rule_set": [
-			  {
-				"tag": "geosite-geolocation-!cn",
-				"type": "remote",
-				"format": "binary",
-				"url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
-				"download_detour": "select",
-				"update_interval": "1d"
-			  },
-			  {
-				"tag": "geosite-cn",
-				"type": "remote",
-				"format": "binary",
-				"url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
-				"download_detour": "select",
-				"update_interval": "1d"
-			  },
-			  {
-				"tag": "geoip-cn",
-				"type": "remote",
-				"format": "binary",
-				"url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
-				"download_detour": "select",
-				"update_interval": "1d"
-			  }
-			],
-			"auto_detect_interface": true,
-			"final": "select",
-			"rules": [
-			  {
-				"outbound": "dns-out",
-				"protocol": "dns"
-			  },
-			  {
-				"clash_mode": "Direct",
-				"outbound": "direct"
-			  },
-			  {
-				"clash_mode": "Global",
-				"outbound": "select"
-			  },
-			  {
-				"rule_set": "geoip-cn",
-				"outbound": "direct"
-			  },
-			  {
-				"rule_set": "geosite-cn",
-				"outbound": "direct"
-			  },
-			  {
-				"ip_is_private": true,
-				"outbound": "direct"
-			  },
-			  {
-				"rule_set": "geosite-geolocation-!cn",
-				"outbound": "select"
-			  }
-			]
-		  },
-		  "ntp": {
-			"enabled": true,
-			"server": "time.apple.com",
-			"server_port": 123,
-			"interval": "30m",
-			"detour": "direct"
-		  }
-		}`;
-} 
+
+function isValidBase64(str) {
+	const base64Regex = /^[A-Za-z0-9+/=]+$/;
+	return base64Regex.test(str);
+}
